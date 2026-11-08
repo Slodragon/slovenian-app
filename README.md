@@ -18,6 +18,30 @@ dependencies — open `index.html` in any modern browser.
 - **Grammar tips** per unit (genders, dual, cases, formal/informal address)
 - Typing answers are graded leniently: case-, punctuation- and diacritic-insensitive
 
+## Optional: cloud accounts (Firebase)
+
+Local profiles work out of the box. To sync progress across devices with real
+accounts (email + password), set up Firebase:
+
+1. Create a free project at [console.firebase.google.com](https://console.firebase.google.com)
+2. Enable **Authentication → Email/Password** and create a **Firestore** database
+3. Copy `firebase-config.example.js` to `firebase-config.js` and paste your web
+   app config (the file is gitignored, so keys stay private)
+4. Lock down Firestore with these rules so users can only touch their own data:
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+Without `firebase-config.js` the app runs fully offline with local profiles only.
+
 ## Run
 
 Open `index.html` directly, or serve the folder:

@@ -51,6 +51,7 @@ function updateStreak() {
   state.streak = state.lastDate === y ? state.streak + 1 : 1;
   state.lastDate = today;
   saveStore();
+  if (window.SlovenkoCloud) window.SlovenkoCloud.sync();
 }
 
 /* ---------------- Profile picker screen ---------------- */
@@ -62,7 +63,7 @@ function renderProfiles() {
     const card = document.createElement("div");
     card.className = "profile-card";
     card.innerHTML = `<div class="profile-avatar">${p.avatar}</div>
-      <div class="profile-info"><b>${escapeHtml(p.name)}</b><span>⚡ ${p.xp} XP · 🔥 ${p.streak}</span></div>
+      <div class="profile-info"><b>${escapeHtml(p.name)} ${p.uid ? '<span class="cloud-badge">☁️</span>' : ""}</b><span>⚡ ${p.xp} XP · 🔥 ${p.streak}</span></div>
       <button class="profile-del" title="Delete profile">✕</button>`;
     card.querySelector(".profile-del").addEventListener("click", (e) => {
       e.stopPropagation();
@@ -406,6 +407,7 @@ function finishLesson() {
   state.completed[id] = Math.max(state.completed[id] || 0, session.earned);
   state.xp += session.earned;
   saveStore();
+  if (window.SlovenkoCloud) window.SlovenkoCloud.sync();
   showScreen("screen-complete");
   document.getElementById("complete-xp").textContent = session.earned;
   const acc = session.answered ? Math.round(session.correct / session.answered * 100) : 100;

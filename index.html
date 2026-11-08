@@ -21,6 +21,20 @@
         <button id="btn-create-profile" class="btn primary big">START LEARNING</button>
       </div>
       <button id="btn-add-profile" class="btn ghost big">+ Add a learner</button>
+      <div id="cloud-box">
+        <button id="btn-cloud" class="btn ghost big">☁️ Sign in to sync across devices</button>
+        <div id="cloud-form" class="hidden">
+          <input id="cloud-email" class="text-input" type="email" placeholder="Email" autocomplete="off">
+          <input id="cloud-pass" class="text-input" type="password" placeholder="Password (min 6 chars)">
+          <button id="btn-signin" class="btn primary big">SIGN IN</button>
+          <button id="btn-signup" class="btn ghost big">CREATE ACCOUNT</button>
+          <p id="cloud-msg" class="cloud-msg"></p>
+        </div>
+        <div id="cloud-user" class="hidden cloud-user">
+          ☁️ Synced as <b id="cloud-email-label"></b>
+          <button id="btn-signout" class="link-btn">Sign out</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -90,6 +104,8 @@
 
 </div>
 <script src="lessons.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-app.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
