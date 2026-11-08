@@ -44,7 +44,11 @@ Without `firebase-config.js` the app runs fully offline with local profiles only
 
 ## Run
 
-Open `index.html` directly, or serve the folder:
+**Easiest (works on phones and from cloud drives):** open
+`slovenian-app-single-file.html` — a single self-contained file with all CSS
+and JS inlined. Regenerate it after edits with `node build-single-file.js`.
+
+Or open `index.html` directly, or serve the folder:
 
 ```sh
 python3 -m http.server 8000
@@ -57,3 +61,6 @@ python3 -m http.server 8000
 - `styles.css` — Duolingo-style UI
 - `lessons.js` — course content (`UNITS` array; add lessons/exercises here)
 - `app.js` — lesson engine, multi-profile accounts, scoring, persistence
+- `firebase-app.js` — optional Firebase sync (loaded only if configured)
+- `slovenian-app-single-file.html` — self-contained build for phones/cloud drives
+- `build-single-file.js` — regenerates the single-file build
