@@ -10,8 +10,11 @@ dependencies — open `index.html` in any modern browser.
 - **5 exercise types**: multiple choice (EN→SL and SL→EN), fill-in-the-blank,
   word-bank sentence building, listening (speech synthesis, `sl-SI` voice),
   and matching pairs
+- **Multi-profile accounts**: a "Who's learning?" picker lets different people
+  on the same device each have their own profile (name + avatar) with fully
+  separate XP, streak, and lesson progress (stored per profile in `localStorage`)
 - **Game mechanics**: XP, daily streak, 5 hearts per lesson, progress bar,
-  lesson path with locked/unlocked nodes — progress saved in `localStorage`
+  lesson path with locked/unlocked nodes
 - **Grammar tips** per unit (genders, dual, cases, formal/informal address)
 - Typing answers are graded leniently: case-, punctuation- and diacritic-insensitive
 
@@ -29,4 +32,4 @@ python3 -m http.server 8000
 - `index.html` — screens and modals
 - `styles.css` — Duolingo-style UI
 - `lessons.js` — course content (`UNITS` array; add lessons/exercises here)
-- `app.js` — lesson engine, scoring, persistence
+- `app.js` — lesson engine, multi-profile accounts, scoring, persistence

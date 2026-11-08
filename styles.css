@@ -184,6 +184,38 @@ body {
 .xp-bg { background: var(--orange); }
 .acc-bg { background: var(--blue); }
 
+/* ---------- Profile picker ---------- */
+.profile-picker { max-width: 420px; margin: 0 auto; padding: 48px 24px; text-align: center; }
+.big-brand { font-size: 34px; margin-bottom: 8px; }
+.profile-picker h1 { font-size: 26px; font-weight: 900; margin-bottom: 24px; }
+#profile-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.profile-card {
+  display: flex; align-items: center; gap: 14px; text-align: left;
+  border: 2px solid var(--border); border-bottom-width: 4px; border-radius: 16px;
+  padding: 14px 16px; cursor: pointer; background: #fff; position: relative;
+}
+.profile-card:hover { background: #f0faff; border-color: #b3e5fc; }
+.profile-avatar { font-size: 34px; }
+.profile-info { flex: 1; display: flex; flex-direction: column; }
+.profile-info b { font-size: 18px; font-weight: 900; }
+.profile-info span { color: var(--muted); font-weight: 700; font-size: 14px; }
+.profile-del { border: none; background: none; color: var(--muted); font-weight: 900; cursor: pointer; font-size: 14px; padding: 6px; }
+.profile-del:hover { color: var(--red); }
+#profile-create { margin-bottom: 14px; display: flex; flex-direction: column; gap: 14px; }
+#profile-create.hidden { display: none; }
+.avatar-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.avatar-opt {
+  font-size: 26px; width: 52px; height: 52px; border-radius: 14px; cursor: pointer;
+  border: 2px solid var(--border); background: #fff;
+}
+.avatar-opt.selected { border-color: var(--green); background: #e9fad9; }
+.profile-chip {
+  display: flex; align-items: center; gap: 6px; border: 2px solid var(--border);
+  background: #fff; border-radius: 12px; padding: 6px 12px; font-size: 14px;
+  font-family: inherit; font-weight: 800; color: var(--ink); cursor: pointer;
+}
+.profile-chip:hover { background: var(--card); }
+
 /* ---------- Modals ---------- */
 .modal {
   position: fixed; inset: 0; background: rgba(255,255,255,0.96); z-index: 20;

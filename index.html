@@ -9,11 +9,29 @@
 <body>
 <div id="app">
 
+  <!-- PROFILE PICKER SCREEN -->
+  <section id="screen-profiles" class="screen">
+    <div class="profile-picker">
+      <div class="brand big-brand">🦉 Sloven<span>ko</span></div>
+      <h1>Who's learning?</h1>
+      <div id="profile-list"></div>
+      <div id="profile-create" class="hidden">
+        <input id="profile-name" class="text-input" type="text" maxlength="16" placeholder="Your name" autocomplete="off">
+        <div class="avatar-row" id="avatar-row"></div>
+        <button id="btn-create-profile" class="btn primary big">START LEARNING</button>
+      </div>
+      <button id="btn-add-profile" class="btn ghost big">+ Add a learner</button>
+    </div>
+  </section>
+
   <!-- HOME SCREEN -->
-  <section id="screen-home" class="screen active">
+  <section id="screen-home" class="screen">
     <header class="topbar">
       <div class="brand">🦉 Sloven<span>ko</span></div>
       <div class="stats">
+        <button id="btn-switch-profile" class="profile-chip" title="Switch learner">
+          <span id="profile-chip-avatar">🦉</span> <b id="profile-chip-name">Learner</b> ▾
+        </button>
         <div class="stat streak" title="Streak">🔥 <b id="stat-streak">0</b></div>
         <div class="stat xp" title="XP">⚡ <b id="stat-xp">0</b></div>
       </div>

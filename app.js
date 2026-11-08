@@ -1,30 +1,111 @@
-/* Slovenko — app logic */
+/* Slovenko — app logic (multi-profile) */
 
-const STORE_KEY = "slovenko-progress-v1";
+const STORE_KEY = "slovenko-profiles-v1";
+const LEGACY_KEY = "slovenko-progress-v1";
+const AVATARS = ["🦉", "🐸", "🦊", "🐼", "🦁", "🐯", "🐰", "🐨"];
 
-function loadState() {
+function emptyProfile(name, avatar) {
+  return { id: "p" + Date.now() + Math.random().toString(36).slice(2, 7),
+           name: name || "Learner", avatar: avatar || AVATARS[0],
+           xp: 0, streak: 0, lastDate: null, completed: {} };
+}
+
+function loadStore() {
   try {
     const s = JSON.parse(localStorage.getItem(STORE_KEY));
-    if (s && typeof s === "object") return Object.assign({ xp: 0, streak: 0, lastDate: null, completed: {} }, s);
+    if (s && Array.isArray(s.profiles)) return Object.assign({ profiles: [], activeId: null }, s);
   } catch (e) { /* fresh start */ }
-  return { xp: 0, streak: 0, lastDate: null, completed: {} };
+  // Migrate the old single-player save into a first profile.
+  try {
+    const old = JSON.parse(localStorage.getItem(LEGACY_KEY));
+    if (old && typeof old === "object" && (old.xp || old.completed)) {
+      const p = emptyProfile("Learner", AVATARS[0]);
+      Object.assign(p, { xp: old.xp || 0, streak: old.streak || 0, lastDate: old.lastDate || null, completed: old.completed || {} });
+      localStorage.removeItem(LEGACY_KEY);
+      return { profiles: [p], activeId: p.id };
+    }
+  } catch (e) { /* ignore */ }
+  return { profiles: [], activeId: null };
 }
 
-function saveState(s) {
-  localStorage.setItem(STORE_KEY, JSON.stringify(s));
+function saveStore() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(store));
 }
 
-const state = loadState();
+let store = loadStore();
+let state = store.profiles.find(p => p.id === store.activeId) || null;
+
+function activateProfile(id) {
+  state = store.profiles.find(p => p.id === id) || null;
+  store.activeId = id;
+  saveStore();
+  if (state) updateStreak();
+}
 
 // Streak: +1 if last activity was yesterday, reset if older, keep if today.
-(function updateStreak() {
+function updateStreak() {
+  if (!state) return;
   const today = new Date().toDateString();
   if (state.lastDate === today) return;
   const y = new Date(Date.now() - 86400000).toDateString();
   state.streak = state.lastDate === y ? state.streak + 1 : 1;
   state.lastDate = today;
-  saveState(state);
-})();
+  saveStore();
+}
+
+/* ---------------- Profile picker screen ---------------- */
+
+function renderProfiles() {
+  const list = document.getElementById("profile-list");
+  list.innerHTML = "";
+  store.profiles.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "profile-card";
+    card.innerHTML = `<div class="profile-avatar">${p.avatar}</div>
+      <div class="profile-info"><b>${escapeHtml(p.name)}</b><span>⚡ ${p.xp} XP · 🔥 ${p.streak}</span></div>
+      <button class="profile-del" title="Delete profile">✕</button>`;
+    card.querySelector(".profile-del").addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!confirm(`Delete ${p.name}'s profile and all progress?`)) return;
+      store.profiles = store.profiles.filter(x => x.id !== p.id);
+      if (store.activeId === p.id) { store.activeId = null; state = null; }
+      saveStore();
+      renderProfiles();
+    });
+    card.addEventListener("click", () => {
+      activateProfile(p.id);
+      renderHome();
+      showScreen("screen-home");
+    });
+    list.appendChild(card);
+  });
+  document.getElementById("btn-add-profile").classList.toggle("hidden", false);
+  document.getElementById("profile-create").classList.add("hidden");
+  const avRow = document.getElementById("avatar-row");
+  avRow.innerHTML = "";
+  AVATARS.forEach((a, i) => {
+    const b = document.createElement("button");
+    b.className = "avatar-opt" + (i === 0 ? " selected" : "");
+    b.textContent = a;
+    b.addEventListener("click", () => {
+      avRow.querySelectorAll(".avatar-opt").forEach(x => x.classList.remove("selected"));
+      b.classList.add("selected");
+    });
+    avRow.appendChild(b);
+  });
+}
+
+function createProfile() {
+  const name = document.getElementById("profile-name").value.trim().slice(0, 16);
+  const sel = document.querySelector("#avatar-row .avatar-opt.selected");
+  const p = emptyProfile(name || "Learner", sel ? sel.textContent : AVATARS[0]);
+  store.profiles.push(p);
+  saveStore();
+  activateProfile(p.id);
+  document.getElementById("profile-name").value = "";
+  renderHome();
+  showScreen("screen-home");
+}
 
 /* ---------------- Home screen ---------------- */
 
@@ -32,12 +113,15 @@ function isUnlocked(lessonId) {
   const all = [];
   for (const u of UNITS) for (const l of u.lessons) all.push(l.id);
   const i = all.indexOf(lessonId);
-  return i === 0 || !!state.completed[all[i - 1]];
+  return i === 0 || !!(state && state.completed[all[i - 1]]);
 }
 
 function renderHome() {
+  if (!state) { renderProfiles(); showScreen("screen-profiles"); return; }
   document.getElementById("stat-xp").textContent = state.xp;
   document.getElementById("stat-streak").textContent = state.streak;
+  document.getElementById("profile-chip-avatar").textContent = state.avatar;
+  document.getElementById("profile-chip-name").textContent = state.name;
   const wrap = document.getElementById("units");
   wrap.innerHTML = "";
   const icons = ["👋", "🍽️", "👨‍👩‍👧", "🗺️"];
@@ -81,7 +165,7 @@ let session = null;
 
 function startLesson(id) {
   const found = findLesson(id);
-  if (!found) return;
+  if (!found || !state) return;
   session = {
     lesson: found.lesson, unit: found.unit,
     index: 0, hearts: 5, earned: 0, correct: 0, answered: 0,
@@ -128,8 +212,7 @@ function renderExercise() {
   const total = session.lesson.exercises.length;
   document.getElementById("progress-fill").style.width = (session.index / total * 100) + "%";
   document.getElementById("stat-hearts").textContent = session.hearts;
-  document.getElementById("lesson-tip").textContent =
-    `${session.index + 1} / ${total}`;
+  document.getElementById("lesson-tip").textContent = `${session.index + 1} / ${total}`;
 
   session.selection = null; session.words = []; session.typed = "";
   session.matched = new Set(); session.matchSel = null;
@@ -162,7 +245,7 @@ function renderChoice(area, ex) {
     html = `<div class="fill-sentence">${escapeHtml(parts[0])}<span class="blank" id="fill-blank">&nbsp;</span>${escapeHtml(parts[1])}</div>
             <div class="ex-hint">${escapeHtml(ex.gloss)}</div>`;
   }
-  html += `<div class="options">` + shuffle(ex.options).map((o, i) =>
+  html += `<div class="options">` + shuffle(ex.options).map((o) =>
     `<button class="opt-btn" data-val="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join("") + `</div>`;
   area.innerHTML = html;
   area.querySelectorAll(".opt-btn").forEach(b => b.addEventListener("click", () => {
@@ -296,9 +379,7 @@ function checkAnswer() {
     session.hearts--;
     document.getElementById("stat-hearts").textContent = session.hearts;
     showResult(false, ex);
-    if (session.hearts <= 0) {
-      setTimeout(showFailed, 1400);
-    }
+    if (session.hearts <= 0) setTimeout(showFailed, 1400);
   }
   document.getElementById("progress-fill").style.width = ((session.index + 1) / session.lesson.exercises.length * 100) + "%";
 }
@@ -324,13 +405,13 @@ function finishLesson() {
   const id = session.lesson.id;
   state.completed[id] = Math.max(state.completed[id] || 0, session.earned);
   state.xp += session.earned;
-  saveState(state);
+  saveStore();
   showScreen("screen-complete");
   document.getElementById("complete-xp").textContent = session.earned;
   const acc = session.answered ? Math.round(session.correct / session.answered * 100) : 100;
   document.getElementById("complete-acc").textContent = acc + "%";
   document.getElementById("complete-sub").textContent =
-    `${session.lesson.title} — you earned ${session.earned} XP!`;
+    `${session.lesson.title} — ${state.name} earned ${session.earned} XP!`;
   session = null;
 }
 
@@ -346,8 +427,7 @@ document.getElementById("btn-modal-next").addEventListener("click", nextExercise
 document.getElementById("btn-continue").addEventListener("click", () => { renderHome(); showScreen("screen-home"); });
 document.getElementById("btn-retry").addEventListener("click", () => {
   document.getElementById("modal-failed").classList.add("hidden");
-  const id = session.lesson.id;
-  startLesson(id);
+  startLesson(session.lesson.id);
 });
 document.getElementById("btn-exit").addEventListener("click", () => {
   document.getElementById("modal-failed").classList.add("hidden");
@@ -360,5 +440,21 @@ document.getElementById("btn-quit").addEventListener("click", () => {
   renderHome();
   showScreen("screen-home");
 });
+document.getElementById("btn-switch-profile").addEventListener("click", () => {
+  session = null;
+  renderProfiles();
+  showScreen("screen-profiles");
+});
+document.getElementById("btn-add-profile").addEventListener("click", () => {
+  document.getElementById("profile-create").classList.remove("hidden");
+  document.getElementById("profile-name").focus();
+});
+document.getElementById("btn-create-profile").addEventListener("click", createProfile);
+document.getElementById("profile-name").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") createProfile();
+});
 
-renderHome();
+/* ---------------- Boot ---------------- */
+
+if (state) { updateStreak(); renderHome(); showScreen("screen-home"); }
+else { renderProfiles(); showScreen("screen-profiles"); }
