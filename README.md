@@ -1,4 +1,4 @@
-# Slovenko 🦉 — Learn Slovenian
+# Slovenko 🐿️ — Learn Slovenian
 
 A Duolingo-style language-learning web app for Slovenian. No build step, no
 dependencies — open `index.html` in any modern browser.

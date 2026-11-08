@@ -2,7 +2,7 @@
 
 const STORE_KEY = "slovenko-profiles-v1";
 const LEGACY_KEY = "slovenko-progress-v1";
-const AVATARS = ["🦉", "🐸", "🦊", "🐼", "🦁", "🐯", "🐰", "🐨"];
+const AVATARS = ["🐿️", "🐸", "🦊", "🐼", "🦁", "🐯", "🐰", "🐨"];
 
 function emptyProfile(name, avatar) {
   return { id: "p" + Date.now() + Math.random().toString(36).slice(2, 7),
