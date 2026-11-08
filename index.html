@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slovenko — Learn Slovenian</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- HOME SCREEN -->
+  <section id="screen-home" class="screen active">
+    <header class="topbar">
+      <div class="brand">🦉 Sloven<span>ko</span></div>
+      <div class="stats">
+        <div class="stat streak" title="Streak">🔥 <b id="stat-streak">0</b></div>
+        <div class="stat xp" title="XP">⚡ <b id="stat-xp">0</b></div>
+      </div>
+    </header>
+    <div id="units"></div>
+  </section>
+
+  <!-- LESSON SCREEN -->
+  <section id="screen-lesson" class="screen">
+    <header class="lessonbar">
+      <button id="btn-quit" class="icon-btn" title="Quit lesson">✕</button>
+      <div class="progress"><div id="progress-fill"></div></div>
+      <div class="stat hearts" title="Hearts">❤️ <b id="stat-hearts">5</b></div>
+    </header>
+    <div class="lesson-head">
+      <h2 id="lesson-title"></h2>
+      <p id="lesson-tip"></p>
+    </div>
+    <div id="exercise-area"></div>
+    <footer id="lesson-footer" class="lesson-footer hidden">
+      <div id="feedback"></div>
+      <button id="btn-check" class="btn primary">CHECK</button>
+    </footer>
+  </section>
+
+  <!-- LESSON COMPLETE SCREEN -->
+  <section id="screen-complete" class="screen">
+    <div class="complete-card">
+      <div class="complete-emoji">🏆</div>
+      <h1>Lesson complete!</h1>
+      <p id="complete-sub"></p>
+      <div class="complete-stats">
+        <div class="cstat xp-bg"><span>TOTAL XP</span><b id="complete-xp">0</b></div>
+        <div class="cstat acc-bg"><span>ACCURACY</span><b id="complete-acc">0%</b></div>
+      </div>
+      <button id="btn-continue" class="btn primary big">CONTINUE</button>
+    </div>
+  </section>
+
+  <!-- RESULT MODAL -->
+  <div id="modal-result" class="modal hidden">
+    <div id="modal-body" class="modal-body"></div>
+    <button id="btn-modal-next" class="btn primary big">CONTINUE</button>
+  </div>
+
+  <!-- LESSON FAILED MODAL -->
+  <div id="modal-failed" class="modal hidden">
+    <div class="modal-body failed">
+      <div class="complete-emoji">💔</div>
+      <h1>Out of hearts!</h1>
+      <p>Don't worry — practice makes perfect.</p>
+      <button id="btn-retry" class="btn primary big">TRY AGAIN</button>
+      <button id="btn-exit" class="btn ghost big">EXIT</button>
+    </div>
+  </div>
+
+</div>
+<script src="lessons.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
