@@ -64,7 +64,7 @@
     <header class="lessonbar">
       <button id="btn-quit" class="icon-btn" title="Quit lesson">✕</button>
       <div class="progress"><div id="progress-fill"></div></div>
-      <div class="stat hearts" title="Hearts">❤️ <b id="stat-hearts">5</b></div>
+      <div class="stat hearts" title="Unlimited hearts">❤️ <b id="stat-hearts">∞</b></div>
     </header>
     <div class="lesson-head">
       <h2 id="lesson-title"></h2>
@@ -97,19 +97,20 @@
     <button id="btn-modal-next" class="btn primary big">CONTINUE</button>
   </div>
 
-  <!-- LESSON FAILED MODAL -->
-  <div id="modal-failed" class="modal hidden">
-    <div class="modal-body failed">
-      <div class="complete-emoji">💔</div>
-      <h1>Out of hearts!</h1>
-      <p>Don't worry — practice makes perfect.</p>
-      <button id="btn-retry" class="btn primary big">TRY AGAIN</button>
-      <button id="btn-exit" class="btn ghost big">EXIT</button>
+  <!-- LOCKED LESSON / TEST-OUT MODAL -->
+  <div id="modal-locked" class="modal hidden">
+    <div class="modal-body">
+      <div class="complete-emoji">🔑</div>
+      <h1>Jump ahead?</h1>
+      <p>Finish this lesson to unlock the next one — no need to play every lesson in order!</p>
+      <button id="btn-testout" class="btn primary big">TAKE THE TEST</button>
+      <button id="btn-locked-close" class="btn ghost big">NOT NOW</button>
     </div>
   </div>
 
 </div>
 <script src="lessons.js"></script>
+<script src="content-gen.js"></script>
 <script src="firebase-config.js"></script>
 <script src="firebase-app.js"></script>
 <script src="app.js"></script>

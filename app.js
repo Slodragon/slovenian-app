@@ -151,9 +151,13 @@ function renderHome() {
       const btn = document.createElement("button");
       btn.className = "lesson-node" + (done ? " done" : "") + (!unlocked ? " locked" : "");
       btn.style.background = unlocked ? u.color : "";
-      btn.textContent = done ? "★" : unlocked ? "▶" : "🔒";
+      btn.textContent = done ? "★" : unlocked ? "▶" : "🔑";
       btn.title = l.title;
       if (unlocked) btn.addEventListener("click", () => startLesson(l.id));
+      else btn.addEventListener("click", () => {
+        pendingTestOut = l.id;
+        document.getElementById("modal-locked").classList.remove("hidden");
+      });
       const label = document.createElement("div");
       label.className = "node-label";
       label.textContent = l.title;
@@ -168,6 +172,7 @@ function renderHome() {
 /* ---------------- Lesson engine ---------------- */
 
 let session = null;
+let pendingTestOut = null;
 
 function startLesson(id) {
   const found = findLesson(id);
@@ -217,7 +222,7 @@ function renderExercise() {
   const ex = session.lesson.exercises[session.index];
   const total = session.lesson.exercises.length;
   document.getElementById("progress-fill").style.width = (session.index / total * 100) + "%";
-  document.getElementById("stat-hearts").textContent = session.hearts;
+  document.getElementById("stat-hearts").textContent = "∞";
   document.getElementById("lesson-tip").textContent = `${session.index + 1} / ${total}`;
 
   session.selection = null; session.words = []; session.typed = "";
@@ -382,10 +387,7 @@ function checkAnswer() {
     session.earned += 10;
     showResult(true, ex);
   } else {
-    session.hearts--;
-    document.getElementById("stat-hearts").textContent = session.hearts;
     showResult(false, ex);
-    if (session.hearts <= 0) setTimeout(showFailed, 1400);
   }
   document.getElementById("progress-fill").style.width = ((session.index + 1) / session.lesson.exercises.length * 100) + "%";
 }
@@ -422,26 +424,20 @@ function finishLesson() {
   session = null;
 }
 
-function showFailed() {
-  document.getElementById("modal-result").classList.add("hidden");
-  document.getElementById("modal-failed").classList.remove("hidden");
-}
-
 /* ---------------- Wiring ---------------- */
+
+document.getElementById("btn-testout").addEventListener("click", () => {
+  document.getElementById("modal-locked").classList.add("hidden");
+  if (pendingTestOut) { const id = pendingTestOut; pendingTestOut = null; startLesson(id); }
+});
+document.getElementById("btn-locked-close").addEventListener("click", () => {
+  document.getElementById("modal-locked").classList.add("hidden");
+  pendingTestOut = null;
+});
 
 document.getElementById("btn-check").addEventListener("click", checkAnswer);
 document.getElementById("btn-modal-next").addEventListener("click", nextExercise);
 document.getElementById("btn-continue").addEventListener("click", () => { renderHome(); showScreen("screen-home"); });
-document.getElementById("btn-retry").addEventListener("click", () => {
-  document.getElementById("modal-failed").classList.add("hidden");
-  startLesson(session.lesson.id);
-});
-document.getElementById("btn-exit").addEventListener("click", () => {
-  document.getElementById("modal-failed").classList.add("hidden");
-  session = null;
-  renderHome();
-  showScreen("screen-home");
-});
 document.getElementById("btn-quit").addEventListener("click", () => {
   session = null;
   renderHome();

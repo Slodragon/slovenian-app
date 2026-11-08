@@ -5,16 +5,17 @@ dependencies — open `index.html` in any modern browser.
 
 ## Features
 
-- **4 units, 12 lessons, 95 exercises** covering greetings, food & drink,
-  people & family, and around-town vocabulary
+- **40 units, 120 lessons, ~950 exercises** — 4 hand-written units plus 36
+  generated topic units (animals, weather, health, travel, verbs, numbers…)
 - **5 exercise types**: multiple choice (EN→SL and SL→EN), fill-in-the-blank,
   word-bank sentence building, listening (speech synthesis, `sl-SI` voice),
   and matching pairs
 - **Multi-profile accounts**: a "Who's learning?" picker lets different people
   on the same device each have their own profile (name + avatar) with fully
   separate XP, streak, and lesson progress (stored per profile in `localStorage`)
-- **Game mechanics**: XP, daily streak, 5 hearts per lesson, progress bar,
-  lesson path with locked/unlocked nodes
+- **Game mechanics**: XP, daily streak, **unlimited hearts**, progress bar,
+  lesson path with locked nodes — tap a locked lesson to **test out and jump
+  ahead** (finish it to unlock the next one)
 - **Grammar tips** per unit (genders, dual, cases, formal/informal address)
 - Typing answers are graded leniently: case-, punctuation- and diacritic-insensitive
 
@@ -61,6 +62,7 @@ python3 -m http.server 8000
 - `styles.css` — Duolingo-style UI
 - `lessons.js` — course content (`UNITS` array; add lessons/exercises here)
 - `app.js` — lesson engine, multi-profile accounts, scoring, persistence
+- `content-gen.js` — deterministic generator for the 36 topic units
 - `firebase-app.js` — optional Firebase sync (loaded only if configured)
 - `slovenian-app-single-file.html` — self-contained build for phones/cloud drives
 - `build-single-file.js` — regenerates the single-file build
