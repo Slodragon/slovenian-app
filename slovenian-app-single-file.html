@@ -253,6 +253,12 @@ body {
 </style>
 </head>
 <body>
+<noscript>
+  <div style="max-width:480px;margin:40px auto;padding:20px;font-family:sans-serif;text-align:center">
+    <h1>🐿️ Slovenko</h1>
+    <p>This app needs JavaScript. If you're seeing this in a file preview (Quick Look), tap the <b>Share</b> icon and choose <b>Open in Safari</b>.</p>
+  </div>
+</noscript>
 <div id="app">
 
   <!-- PROFILE PICKER SCREEN -->
@@ -727,7 +733,7 @@ function emptyProfile(name, avatar) {
 
 function loadStore() {
   try {
-    const s = JSON.parse(localStorage.getItem(STORE_KEY));
+    const s = JSON.parse(localStorage.getItem(STORE_KEY) || (memFallback || "null"));
     if (s && Array.isArray(s.profiles)) return Object.assign({ profiles: [], activeId: null }, s);
   } catch (e) { /* fresh start */ }
   // Migrate the old single-player save into a first profile.
@@ -743,8 +749,13 @@ function loadStore() {
   return { profiles: [], activeId: null };
 }
 
+let memFallback = null; // used when localStorage is blocked (e.g. private mode)
 function saveStore() {
-  localStorage.setItem(STORE_KEY, JSON.stringify(store));
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(store));
+  } catch (e) {
+    memFallback = JSON.stringify(store);
+  }
 }
 
 let store = loadStore();

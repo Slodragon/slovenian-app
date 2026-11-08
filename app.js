@@ -12,7 +12,7 @@ function emptyProfile(name, avatar) {
 
 function loadStore() {
   try {
-    const s = JSON.parse(localStorage.getItem(STORE_KEY));
+    const s = JSON.parse(localStorage.getItem(STORE_KEY) || (memFallback || "null"));
     if (s && Array.isArray(s.profiles)) return Object.assign({ profiles: [], activeId: null }, s);
   } catch (e) { /* fresh start */ }
   // Migrate the old single-player save into a first profile.
@@ -28,8 +28,13 @@ function loadStore() {
   return { profiles: [], activeId: null };
 }
 
+let memFallback = null; // used when localStorage is blocked (e.g. private mode)
 function saveStore() {
-  localStorage.setItem(STORE_KEY, JSON.stringify(store));
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(store));
+  } catch (e) {
+    memFallback = JSON.stringify(store);
+  }
 }
 
 let store = loadStore();
