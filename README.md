@@ -1,6 +1,6 @@
 # Slovenko 🐿️ — Learn Slovenian
 
-A Duolingo-style language-learning web app for Slovenian. No build step, no
+A language-learning web app for Slovenian. No build step, no
 dependencies — open `index.html` in any modern browser.
 
 ## Features
@@ -59,7 +59,7 @@ python3 -m http.server 8000
 ## Files
 
 - `index.html` — screens and modals
-- `styles.css` — Duolingo-style UI
+- `styles.css` — UI-Design
 - `lessons.js` — course content (`UNITS` array; add lessons/exercises here)
 - `app.js` — lesson engine, multi-profile accounts, scoring, persistence
 - `content-gen.js` — deterministic generator for the 36 topic units

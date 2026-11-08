@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EnglishProfi — Englisch für Fortgeschrittene</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<noscript>
+  <div style="max-width:480px;margin:40px auto;padding:20px;font-family:sans-serif;text-align:center">
+    <h1>🦊 EnglishProfi</h1>
+    <p>Diese App benötigt JavaScript. Wenn du das in einer Dateivorschau (Quick Look) siehst, tippe auf <b>Teilen</b> und wähle <b>In Safari öffnen</b>.</p>
+  </div>
+</noscript>
+<div id="app">
+
+  <!-- PROFIL-AUSWAHL -->
+  <section id="screen-profiles" class="screen">
+    <div class="profile-picker">
+      <div class="brand big-brand">🦊 English<span>Profi</span></div>
+      <h1>Wer lernt gerade?</h1>
+      <div id="profile-list"></div>
+      <div id="profile-create" class="hidden">
+        <input id="profile-name" class="text-input" type="text" maxlength="16" placeholder="Dein Name" autocomplete="off">
+        <div class="avatar-row" id="avatar-row"></div>
+        <button id="btn-create-profile" class="btn primary big">JETZT LERNEN</button>
+      </div>
+      <button id="btn-add-profile" class="btn ghost big">+ Person hinzufügen</button>
+      <div id="cloud-box">
+        <button id="btn-cloud" class="btn ghost big">☁️ Anmelden & auf allen Geräten synchronisieren</button>
+        <div id="cloud-form" class="hidden">
+          <input id="cloud-email" class="text-input" type="email" placeholder="E-Mail" autocomplete="off">
+          <input id="cloud-pass" class="text-input" type="password" placeholder="Passwort (min. 6 Zeichen)">
+          <button id="btn-signin" class="btn primary big">ANMELDEN</button>
+          <button id="btn-signup" class="btn ghost big">KONTO ERSTELLEN</button>
+          <p id="cloud-msg" class="cloud-msg"></p>
+        </div>
+        <div id="cloud-user" class="hidden cloud-user">
+          ☁️ Synchronisiert als <b id="cloud-email-label"></b>
+          <button id="btn-signout" class="link-btn">Abmelden</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STARTSEITE -->
+  <section id="screen-home" class="screen">
+    <header class="topbar">
+      <div class="brand">🦊 English<span>Profi</span></div>
+      <div class="stats">
+        <button id="btn-switch-profile" class="profile-chip" title="Person wechseln">
+          <span id="profile-chip-avatar">🦊</span> <b id="profile-chip-name">Lerner</b> ▾
+        </button>
+        <div class="stat streak" title="Serie">🔥 <b id="stat-streak">0</b></div>
+        <div class="stat xp" title="XP">⚡ <b id="stat-xp">0</b></div>
+      </div>
+    </header>
+    <div id="units"></div>
+  </section>
+
+  <!-- LEKTION -->
+  <section id="screen-lesson" class="screen">
+    <header class="lessonbar">
+      <button id="btn-quit" class="icon-btn" title="Lektion beenden">✕</button>
+      <div class="progress"><div id="progress-fill"></div></div>
+      <div class="stat hearts" title="Unbegrenzte Leben">❤️ <b id="stat-hearts">∞</b></div>
+    </header>
+    <div class="lesson-head">
+      <h2 id="lesson-title"></h2>
+      <p id="lesson-tip"></p>
+    </div>
+    <div id="exercise-area"></div>
+    <footer id="lesson-footer" class="lesson-footer hidden">
+      <div id="feedback"></div>
+      <button id="btn-check" class="btn primary">PRÜFEN</button>
+    </footer>
+  </section>
+
+  <!-- LEKTION GESCHAFFT -->
+  <section id="screen-complete" class="screen">
+    <div class="complete-card">
+      <div class="complete-emoji">🏆</div>
+      <h1>Lektion geschafft!</h1>
+      <p id="complete-sub"></p>
+      <div class="complete-stats">
+        <div class="cstat xp-bg"><span>XP GESAMT</span><b id="complete-xp">0</b></div>
+        <div class="cstat acc-bg"><span>TREFFERQUOTE</span><b id="complete-acc">0%</b></div>
+      </div>
+      <button id="btn-continue" class="btn primary big">WEITER</button>
+    </div>
+  </section>
+
+  <!-- ERGEBNIS-MODAL -->
+  <div id="modal-result" class="modal hidden">
+    <div id="modal-body" class="modal-body"></div>
+    <button id="btn-modal-next" class="btn primary big">WEITER</button>
+  </div>
+
+  <!-- TEST-OUT-MODAL -->
+  <div id="modal-locked" class="modal hidden">
+    <div class="modal-body">
+      <div class="complete-emoji">🔑</div>
+      <h1>Vorspringen?</h1>
+      <p>Schließe diese Lektion ab, um die nächste freizuschalten — du musst nicht jede Lektion der Reihe nach spielen!</p>
+      <button id="btn-testout" class="btn primary big">TEST STARTEN</button>
+      <button id="btn-locked-close" class="btn ghost big">SPÄTER</button>
+    </div>
+  </div>
+
+</div>
+<script src="lessons.js"></script>
+<script src="content-gen.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-app.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

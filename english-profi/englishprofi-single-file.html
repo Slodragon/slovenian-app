@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EnglishProfi — Englisch für Fortgeschrittene</title>
+<style>
+:root {
+  --green: #d6336c;
+  --green-dark: #b02a5b;
+  --blue: #1cb0f6;
+  --purple: #ce82ff;
+  --orange: #ff9600;
+  --red: #ff4b4b;
+  --ink: #3c3c3c;
+  --muted: #afafaf;
+  --bg: #ffffff;
+  --card: #f7f7f7;
+  --border: #e5e5e5;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Trebuchet MS", "Segoe UI", Verdana, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app { max-width: 640px; margin: 0 auto; min-height: 100vh; }
+
+.screen { display: none; min-height: 100vh; padding-bottom: 120px; }
+.screen.active { display: block; }
+
+/* ---------- Top bar ---------- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; position: sticky; top: 0; background: #fff; z-index: 5;
+  border-bottom: 2px solid var(--border);
+}
+.brand { font-size: 26px; font-weight: 900; color: var(--green); letter-spacing: -0.5px; }
+.brand span { color: var(--ink); }
+.stats { display: flex; gap: 18px; }
+.stat { font-size: 17px; font-weight: 800; }
+.stat.xp { color: var(--orange); }
+.stat.streak { color: var(--orange); }
+.stat.hearts { color: var(--red); }
+
+/* ---------- Home / units ---------- */
+.unit { padding: 8px 20px 24px; }
+.unit-header {
+  display: flex; align-items: center; gap: 14px;
+  border-radius: 16px; padding: 16px 18px; color: #fff; margin: 18px 0 8px;
+}
+.unit-header .uicon { font-size: 30px; }
+.unit-header h2 { font-size: 20px; font-weight: 900; }
+.unit-header p { font-size: 13px; opacity: 0.92; font-weight: 700; }
+
+.path { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 0 8px; }
+.node-wrap { display: flex; flex-direction: column; align-items: center; }
+.lesson-node {
+  width: 74px; height: 74px; border-radius: 24%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; cursor: pointer; border: none;
+  border-bottom: 6px solid rgba(0,0,0,0.15);
+  transition: transform 0.08s ease;
+  color: #fff;
+}
+.lesson-node:active { transform: scale(0.94); }
+.lesson-node.locked { background: #e5e5e5 !important; color: #c9c9c9; cursor: not-allowed; border-bottom-color: #d0d0d0; }
+.lesson-node.done { background: #ffd900 !important; color: #fff; border-bottom-color: #d4ae00; }
+.node-label {
+  margin-top: 6px; background: #fff; border: 2px solid var(--border);
+  padding: 5px 14px; border-radius: 12px; font-weight: 800; font-size: 13px;
+  text-transform: uppercase; letter-spacing: 0.5px; color: var(--ink);
+}
+.tip-box {
+  margin: 14px 4px 0; background: var(--card); border: 2px solid var(--border);
+  border-radius: 14px; padding: 12px 16px; font-size: 14px; color: #777; font-weight: 600;
+}
+.tip-box b { color: var(--ink); }
+
+/* ---------- Lesson screen ---------- */
+.lessonbar { display: flex; align-items: center; gap: 14px; padding: 16px 20px; }
+.icon-btn {
+  border: none; background: none; font-size: 20px; font-weight: 900; color: var(--muted);
+  cursor: pointer; padding: 4px 8px;
+}
+.icon-btn:hover { color: var(--ink); }
+.progress { flex: 1; height: 16px; background: var(--border); border-radius: 10px; overflow: hidden; }
+#progress-fill { height: 100%; width: 0%; background: var(--green); border-radius: 10px; transition: width 0.3s ease; }
+
+.lesson-head { padding: 4px 24px 12px; }
+.lesson-head h2 { font-size: 24px; font-weight: 900; }
+.lesson-head p { color: var(--muted); font-weight: 700; font-size: 14px; margin-top: 2px; }
+
+#exercise-area { padding: 8px 24px; }
+.ex-prompt { font-size: 22px; font-weight: 800; margin: 10px 0 20px; }
+.ex-prompt .dir-tag {
+  display: inline-block; font-size: 11px; font-weight: 900; color: var(--muted);
+  border: 2px solid var(--border); border-radius: 8px; padding: 2px 8px;
+  margin-right: 10px; vertical-align: middle; text-transform: uppercase; letter-spacing: 1px;
+}
+.ex-hint { color: var(--muted); font-weight: 700; margin-top: -12px; margin-bottom: 16px; font-size: 14px; }
+
+.options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 480px) { .options { grid-template-columns: 1fr; } }
+.opt-btn {
+  border: 2px solid var(--border); background: #fff; border-radius: 14px;
+  padding: 16px; font-size: 17px; font-weight: 800; font-family: inherit; color: var(--ink);
+  cursor: pointer; border-bottom-width: 4px; text-align: left;
+}
+.opt-btn:hover:not(:disabled) { background: #f0faff; border-color: #b3e5fc; }
+.opt-btn.selected { border-color: var(--blue); background: #e5f6ff; }
+.opt-btn.correct { border-color: var(--green); background: #e9fad9; color: var(--green-dark); }
+.opt-btn.wrong { border-color: var(--red); background: #ffe5e5; color: var(--red); }
+.opt-btn:disabled { cursor: default; }
+
+.fill-sentence { font-size: 24px; font-weight: 800; margin: 10px 0 20px; }
+.fill-sentence .blank {
+  display: inline-block; min-width: 90px; border-bottom: 3px solid var(--ink);
+  text-align: center; color: var(--blue); padding: 0 6px;
+}
+
+.wordbank { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.answer-area {
+  min-height: 60px; border-bottom: 3px dashed var(--muted); display: flex; flex-wrap: wrap;
+  gap: 10px; padding: 10px 2px; margin-bottom: 8px;
+}
+.word-chip {
+  border: 2px solid var(--border); background: #fff; border-bottom-width: 4px; border-radius: 12px;
+  padding: 10px 16px; font-size: 17px; font-weight: 800; font-family: inherit; cursor: pointer;
+}
+.word-chip:hover { background: #f4f4f4; }
+.word-chip.used { visibility: hidden; }
+.word-chip.in-answer { background: #e5f6ff; border-color: #b3e5fc; }
+
+.listen-row { display: flex; align-items: center; gap: 16px; margin: 10px 0 20px; }
+.speaker-btn {
+  width: 72px; height: 72px; border-radius: 24%; border: none; cursor: pointer;
+  background: var(--blue); color: #fff; font-size: 30px; border-bottom: 5px solid #1899d6;
+}
+.speaker-btn:active { transform: translateY(2px); border-bottom-width: 3px; }
+.text-input {
+  flex: 1; border: 2px solid var(--border); background: var(--card); border-radius: 14px;
+  padding: 14px 16px; font-size: 18px; font-weight: 700; font-family: inherit; color: var(--ink);
+}
+.text-input:focus { outline: none; border-color: var(--blue); background: #fff; }
+
+.match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.match-btn {
+  border: 2px solid var(--border); background: #fff; border-radius: 14px; border-bottom-width: 4px;
+  padding: 14px; font-size: 16px; font-weight: 800; font-family: inherit; cursor: pointer;
+}
+.match-btn.selected { border-color: var(--blue); background: #e5f6ff; }
+.match-btn.matched { border-color: var(--green); background: #e9fad9; color: var(--green-dark); cursor: default; opacity: 0.55; }
+
+/* ---------- Footer ---------- */
+.lesson-footer {
+  position: fixed; bottom: 0; left: 0; right: 0; max-width: 640px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px 24px; background: #fff; border-top: 2px solid var(--border); gap: 14px;
+}
+.lesson-footer.hidden { display: none; }
+#feedback { font-weight: 900; font-size: 17px; }
+#feedback.good { color: var(--green-dark); }
+#feedback.bad { color: var(--red); }
+
+.btn {
+  border: none; border-radius: 14px; padding: 14px 28px; font-size: 16px; font-weight: 900;
+  font-family: inherit; cursor: pointer; letter-spacing: 1px; text-transform: uppercase;
+}
+.btn.primary { background: var(--green); color: #fff; border-bottom: 4px solid var(--green-dark); }
+.btn.primary:active { transform: translateY(2px); border-bottom-width: 2px; }
+.btn.primary:disabled { background: #e5e5e5; border-bottom-color: #d0d0d0; color: var(--muted); cursor: not-allowed; }
+.btn.big { width: 100%; padding: 16px; font-size: 17px; }
+.btn.ghost { background: none; color: var(--blue); border: 2px solid var(--border); border-bottom-width: 4px; margin-top: 10px; }
+
+/* ---------- Complete screen ---------- */
+#screen-complete { display: none; }
+#screen-complete.active { display: flex; align-items: center; justify-content: center; }
+.complete-card { text-align: center; padding: 30px; width: 100%; max-width: 420px; }
+.complete-emoji { font-size: 72px; margin-bottom: 10px; }
+.complete-card h1 { font-size: 30px; font-weight: 900; color: #ffb800; margin-bottom: 6px; }
+.complete-card p { color: var(--muted); font-weight: 700; margin-bottom: 24px; }
+.complete-stats { display: flex; gap: 14px; margin-bottom: 28px; }
+.cstat { flex: 1; border-radius: 16px; padding: 16px; color: #fff; }
+.cstat span { display: block; font-size: 12px; font-weight: 900; letter-spacing: 1px; opacity: 0.9; }
+.cstat b { font-size: 24px; font-weight: 900; }
+.xp-bg { background: var(--orange); }
+.acc-bg { background: var(--blue); }
+
+/* ---------- Profile picker ---------- */
+.profile-picker { max-width: 420px; margin: 0 auto; padding: 48px 24px; text-align: center; }
+.big-brand { font-size: 34px; margin-bottom: 8px; }
+.profile-picker h1 { font-size: 26px; font-weight: 900; margin-bottom: 24px; }
+#profile-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.profile-card {
+  display: flex; align-items: center; gap: 14px; text-align: left;
+  border: 2px solid var(--border); border-bottom-width: 4px; border-radius: 16px;
+  padding: 14px 16px; cursor: pointer; background: #fff; position: relative;
+}
+.profile-card:hover { background: #f0faff; border-color: #b3e5fc; }
+.profile-avatar { font-size: 34px; }
+.profile-info { flex: 1; display: flex; flex-direction: column; }
+.profile-info b { font-size: 18px; font-weight: 900; }
+.profile-info span { color: var(--muted); font-weight: 700; font-size: 14px; }
+.profile-del { border: none; background: none; color: var(--muted); font-weight: 900; cursor: pointer; font-size: 14px; padding: 6px; }
+.profile-del:hover { color: var(--red); }
+#profile-create { margin-bottom: 14px; display: flex; flex-direction: column; gap: 14px; }
+#profile-create.hidden { display: none; }
+.avatar-row { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+.avatar-opt {
+  font-size: 26px; width: 52px; height: 52px; border-radius: 14px; cursor: pointer;
+  border: 2px solid var(--border); background: #fff;
+}
+.avatar-opt.selected { border-color: var(--green); background: #e9fad9; }
+.profile-chip {
+  display: flex; align-items: center; gap: 6px; border: 2px solid var(--border);
+  background: #fff; border-radius: 12px; padding: 6px 12px; font-size: 14px;
+  font-family: inherit; font-weight: 800; color: var(--ink); cursor: pointer;
+}
+.profile-chip:hover { background: var(--card); }
+.profile-card .cloud-badge { font-size: 14px; }
+
+/* ---------- Cloud sync box ---------- */
+#cloud-box { margin-top: 22px; border-top: 2px solid var(--border); padding-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+#cloud-form { display: flex; flex-direction: column; gap: 10px; }
+#cloud-form.hidden, #cloud-user.hidden, #btn-cloud.hidden { display: none; }
+.cloud-msg { color: var(--red); font-weight: 700; font-size: 14px; min-height: 18px; }
+.cloud-note { color: var(--muted); font-weight: 600; font-size: 14px; }
+.cloud-note code { background: var(--card); padding: 2px 6px; border-radius: 6px; }
+.cloud-user { font-weight: 700; color: var(--ink); font-size: 15px; }
+.link-btn { border: none; background: none; color: var(--blue); font-weight: 800; cursor: pointer; font-family: inherit; font-size: 14px; }
+
+/* ---------- Modals ---------- */
+.modal {
+  position: fixed; inset: 0; background: rgba(255,255,255,0.96); z-index: 20;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+  padding: 24px; gap: 18px; padding-bottom: 40px;
+}
+.modal.hidden { display: none; }
+.modal-body { width: 100%; max-width: 480px; text-align: center; }
+.modal-body h1 { font-size: 26px; font-weight: 900; margin-bottom: 6px; }
+.modal-body.good h1 { color: var(--green-dark); }
+.modal-body.bad h1 { color: var(--red); }
+.modal-body .correct-answer { color: var(--muted); font-weight: 700; margin-top: 8px; font-size: 16px; }
+.modal-body .correct-answer b { color: var(--green-dark); }
+.modal-body.failed h1 { color: var(--orange); }
+.modal-body p { color: var(--muted); font-weight: 700; }
+
+</style>
+</head>
+<body>
+<noscript>
+  <div style="max-width:480px;margin:40px auto;padding:20px;font-family:sans-serif;text-align:center">
+    <h1>🦊 EnglishProfi</h1>
+    <p>Diese App benötigt JavaScript. Wenn du das in einer Dateivorschau (Quick Look) siehst, tippe auf <b>Teilen</b> und wähle <b>In Safari öffnen</b>.</p>
+  </div>
+</noscript>
+<div id="app">
+
+  <!-- PROFIL-AUSWAHL -->
+  <section id="screen-profiles" class="screen">
+    <div class="profile-picker">
+      <div class="brand big-brand">🦊 English<span>Profi</span></div>
+      <h1>Wer lernt gerade?</h1>
+      <div id="profile-list"></div>
+      <div id="profile-create" class="hidden">
+        <input id="profile-name" class="text-input" type="text" maxlength="16" placeholder="Dein Name" autocomplete="off">
+        <div class="avatar-row" id="avatar-row"></div>
+        <button id="btn-create-profile" class="btn primary big">JETZT LERNEN</button>
+      </div>
+      <button id="btn-add-profile" class="btn ghost big">+ Person hinzufügen</button>
+      <div id="cloud-box">
+        <button id="btn-cloud" class="btn ghost big">☁️ Anmelden & auf allen Geräten synchronisieren</button>
+        <div id="cloud-form" class="hidden">
+          <input id="cloud-email" class="text-input" type="email" placeholder="E-Mail" autocomplete="off">
+          <input id="cloud-pass" class="text-input" type="password" placeholder="Passwort (min. 6 Zeichen)">
+          <button id="btn-signin" class="btn primary big">ANMELDEN</button>
+          <button id="btn-signup" class="btn ghost big">KONTO ERSTELLEN</button>
+          <p id="cloud-msg" class="cloud-msg"></p>
+        </div>
+        <div id="cloud-user" class="hidden cloud-user">
+          ☁️ Synchronisiert als <b id="cloud-email-label"></b>
+          <button id="btn-signout" class="link-btn">Abmelden</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STARTSEITE -->
+  <section id="screen-home" class="screen">
+    <header class="topbar">
+      <div class="brand">🦊 English<span>Profi</span></div>
+      <div class="stats">
+        <button id="btn-switch-profile" class="profile-chip" title="Person wechseln">
+          <span id="profile-chip-avatar">🦊</span> <b id="profile-chip-name">Lerner</b> ▾
+        </button>
+        <div class="stat streak" title="Serie">🔥 <b id="stat-streak">0</b></div>
+        <div class="stat xp" title="XP">⚡ <b id="stat-xp">0</b></div>
+      </div>
+    </header>
+    <div id="units"></div>
+  </section>
+
+  <!-- LEKTION -->
+  <section id="screen-lesson" class="screen">
+    <header class="lessonbar">
+      <button id="btn-quit" class="icon-btn" title="Lektion beenden">✕</button>
+      <div class="progress"><div id="progress-fill"></div></div>
+      <div class="stat hearts" title="Unbegrenzte Leben">❤️ <b id="stat-hearts">∞</b></div>
+    </header>
+    <div class="lesson-head">
+      <h2 id="lesson-title"></h2>
+      <p id="lesson-tip"></p>
+    </div>
+    <div id="exercise-area"></div>
+    <footer id="lesson-footer" class="lesson-footer hidden">
+      <div id="feedback"></div>
+      <button id="btn-check" class="btn primary">PRÜFEN</button>
+    </footer>
+  </section>
+
+  <!-- LEKTION GESCHAFFT -->
+  <section id="screen-complete" class="screen">
+    <div class="complete-card">
+      <div class="complete-emoji">🏆</div>
+      <h1>Lektion geschafft!</h1>
+      <p id="complete-sub"></p>
+      <div class="complete-stats">
+        <div class="cstat xp-bg"><span>XP GESAMT</span><b id="complete-xp">0</b></div>
+        <div class="cstat acc-bg"><span>TREFFERQUOTE</span><b id="complete-acc">0%</b></div>
+      </div>
+      <button id="btn-continue" class="btn primary big">WEITER</button>
+    </div>
+  </section>
+
+  <!-- ERGEBNIS-MODAL -->
+  <div id="modal-result" class="modal hidden">
+    <div id="modal-body" class="modal-body"></div>
+    <button id="btn-modal-next" class="btn primary big">WEITER</button>
+  </div>
+
+  <!-- TEST-OUT-MODAL -->
+  <div id="modal-locked" class="modal hidden">
+    <div class="modal-body">
+      <div class="complete-emoji">🔑</div>
+      <h1>Vorspringen?</h1>
+      <p>Schließe diese Lektion ab, um die nächste freizuschalten — du musst nicht jede Lektion der Reihe nach spielen!</p>
+      <button id="btn-testout" class="btn primary big">TEST STARTEN</button>
+      <button id="btn-locked-close" class="btn ghost big">SPÄTER</button>
+    </div>
+  </div>
+
+</div>
+<script>
+/* EnglishProfi — hand-written advanced (B1+) units. Prompts in German, target language English. */
+
+const UNITS = [
+  {
+    id: "u1",
+    title: "Einheit 1 · Stil & Register",
+    description: "Formell vs. umgangssprachlich — wähle die passende Ebene",
+    color: "#4b7bff",
+    tip: "Im Englischen hängt die Wortwahl stark vom Kontext ab: formell (Beruf, Behörden) vs. locker (Freunde).",
+    lessons: [
+      {
+        id: "u1l1",
+        title: "Formelles Englisch",
+        exercises: [
+          { type: "choice", dir: "de-en", prompt: "Ich möchte mich erkundigen (formell)", options: ["I would like to inquire", "I wanna ask", "Give me the info", "What's up"], answer: "I would like to inquire" },
+          { type: "choice", dir: "de-en", prompt: "außerdem / des Weiteren (formell)", options: ["furthermore", "also", "plus", "and stuff"], answer: "furthermore" },
+          { type: "choice", dir: "de-en", prompt: "benötigen (formell)", options: ["require", "need", "want", "gonna need"], answer: "require" },
+          { type: "choice", dir: "de-en", prompt: "kaufen (formell)", options: ["purchase", "buy", "get", "grab"], answer: "purchase" },
+          { type: "choice", dir: "en-de", prompt: "regarding", options: ["bezüglich", "obwohl", "trotzdem", "außerdem"], answer: "bezüglich" },
+          { type: "words", dir: "de-en", prompt: "Ich entschuldige mich für die Unannehmlichkeiten (formell)", bank: ["I", "apologize", "inconvenience", "for", "the", "sorry"], answer: "I apologize for the inconvenience" },
+          { type: "listen", prompt: "Tippe, was du hörst", answer: "I look forward to hearing from you", hint: "formelle Briefschlussformel: „Ich freue mich auf Ihre Antwort“" }
+        ]
+      },
+      {
+        id: "u1l2",
+        title: "Umgangssprachliches Englisch",
+        exercises: [
+          { type: "choice", dir: "de-en", prompt: "Ich habe keine Lust mehr (umgangssprachlich)", options: ["I can't be bothered", "I am not motivated", "I refuse", "I dislike it"], answer: "I can't be bothered" },
+          { type: "choice", dir: "en-de", prompt: "What's up?", options: ["Was ist los?", "Wie geht's? (förmlich)", "Wo ist es?", "Wie viel kostet es?"], answer: "Was ist los?" },
+          { type: "choice", dir: "de-en", prompt: "Das ist kinderleicht (umgangssprachlich)", options: ["It's a piece of cake", "It's very difficult", "It costs a lot", "It takes forever"], answer: "It's a piece of cake" },
+          { type: "choice", dir: "de-en", prompt: "Mach's gut! / Bis dann!", options: ["Take care", "Be careful", "Good luck", "No problem"], answer: "Take care" },
+          { type: "fill", sentence: "I ___ forward to the weekend.", gloss: "„sich freuen auf“ (look ___)", options: ["look", "am looking", "looking", "looked"], answer: "look" },
+          { type: "words", dir: "de-en", prompt: "Keine Ursache! (umgangssprachlich)", bank: ["No", "worries", "thanks", "problem", "matter"], answer: "No worries" },
+          { type: "listen", prompt: "Tippe, was du hörst", answer: "I can't make it on Friday", hint: "„Am Freitag schaffe ich es nicht“" }
+        ]
+      },
+      {
+        id: "u1l3",
+        title: "Passende Ebene wählen",
+        exercises: [
+          { type: "choice", dir: "de-en", prompt: "Welches Wort passt NICHT in einen formellen Geschäftsbrief?", options: ["gonna", "furthermore", "require", "regarding"], answer: "gonna" },
+          { type: "choice", dir: "en-de", prompt: "endeavor", options: ["sich bemühen", "beginnen", "enden", "erlauben"], answer: "sich bemühen" },
+          { type: "choice", dir: "de-en", prompt: "unterstützen / helfen (formell)", options: ["assist", "help", "aid (umgangssprachlich)", "support"], answer: "assist" },
+          { type: "choice", dir: "en-de", prompt: "commence", options: ["beginnen", "enden", "kommen", "kaufen"], answer: "beginnen" },
+          { type: "words", dir: "de-en", prompt: "Wir beginnen morgen mit dem Projekt (formell)", bank: ["commence", "We", "the", "project", "tomorrow"], answer: "We commence the project tomorrow" },
+          { type: "match", prompt: "Paare zuordnen", pairs: [["formal: benötigen", "require"], ["locker: kaufen", "grab"], ["formal: beginnen", "commence"], ["locker: Was läuft?", "What's up?"]] },
+          { type: "listen", prompt: "Tippe, was du hörst", answer: "I regret to inform you", hint: "formell: „Ich muss Ihnen leider mitteilen…“" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "u2",
+    title: "Einheit 2 · Phrasal Verbs",
+    description: "Die wichtigsten englischen Verbpartikel-Kombinationen",
+    color: "#1cb0f6",
+    tip: "Phrasal Verbs bestehen aus Verb + Partikel (up, down, off…). Die Partikel ändert oft die Bedeutung grundlegend.",
+    lessons: [
+      {
+        id: "u2l1",
+        title: "Phrasal Verbs 1",
+        exercises: [
+          { type: "choice", dir: "de-en", prompt: "aufgeben", options: ["give up", "give in", "give out", "give away"], answer: "give up" },
+          { type: "choice", dir: "de-en", prompt: "ablehnen (ein Angebot)", options: ["turn down", "turn up", "turn off", "turn over"], answer: "turn down" },
+          { type: "choice", dir: "de-en", prompt: "sich freuen auf", options: ["look forward to", "look after", "look into", "look up"], answer: "look forward to" },
+          { type: "choice", dir: "de-en", prompt: "verschieben / aufschieben", options: ["put off", "put on", "put up", "put down"], answer: "put off" },
+          { type: "choice", dir: "en-de", prompt: "come across", options: ["zufällig begegnen / finden", "ankommen", "mitkommen", "vorbeikommen"], answer: "zufällig begegnen / finden" },
+          { type: "words", dir: "de-en", prompt: "Wir haben kein Benzin mehr", bank: ["run", "We", "out", "of", "petrol", "have"], answer: "We have run out of petrol" },
+          { type: "listen", prompt: "Tippe, was du hörst", answer: "Please turn down the music", hint: "„Bitte mach die Musik leiser“" }
+        ]
+      },
+      {
+        id: "u2l2",
+        title: "Phrasal Verbs 2",
+        exercises: [
+          { type: "choice", dir: "de-en", prompt: "abheben (Flugzeug) / durchstarten", options: ["take off", "take up", "take over", "take after"], answer: "take off" },
+          { type: "choice", dir: "de-en", prompt: "sich mit jemandem gut verstehen", options: ["get along with", "get over", "get by", "get in"], answer: "get along with" },
+          { type: "choice", dir: "de-en", prompt: "auseinanderbrechen / kaputt gehen", options: ["break down", "break up", "break in", "break out"], answer: "break down" },
+          { type: "choice", dir: "de-en", prompt: "nachholen / aufholen", options: ["catch up on", "catch up with", "keep up with", "make up for"], answer: "catch up on" },
+          { type: "fill", sentence: "My car ___ ___ yesterday.", gloss: "„kaputt gehen“ (break ___)", options: ["broke down", "broke up", "broke in", "broke out"], answer: "broke down" },
+          { type: "words", dir: "de-en", prompt: "Ich komme gut mit meinen Kollegen aus", bank: ["get", "I", "along", "with", "well", "my", "colleagues"], answer: "I get along well with my colleagues" },
+          { type: "match", prompt: "Paare zuordnen", pairs: [["give up", "aufgeben"], ["turn down", "ablehnen"], ["put off", "aufschieben"], ["take off", "abheben"]] },
+          { type: "listen", prompt: "Tippe, was du hörst", answer: "Don't give up", hint: "„Gib nicht auf!“" }
+        ]
+      },
+      {
+        id: "u2l3",
+        title: "Phrasal Verbs im Satz",
+        exercises: [
+          { type: "choice", dir: "de-en", prompt: "etwas zufällig entdecken", options: ["come across", "come up with", "come over", "come out"], answer: "come across" },
+          { type: "choice", dir: "de-en", prompt: "sich etwas einfallen lassen", options: ["come up with", "come across", "come about", "come along"], answer: "come up with" },
+          { type: "choice", dir: "en-de", prompt: "carry on", options: ["weitermachen", "weitergeben", "tragen", "sich kümmern"], answer: "weitermachen" },
+          { type: "fill", sentence: "I'm looking ___ ___ my keys.", gloss: "„suchen“ (look ___)", options: ["for", "after", "up", "into"], answer: "for" },
+          { type: "words", dir: "de-en", prompt: "Die Besprechung wurde auf nächste Woche verschoben", bank: ["postponed", "The", "meeting", "was", "to", "next", "week"], answer: "The meeting was postponed to next week" },
+          { type: "choice", dir: "de-en", prompt: "herausfinden", options: ["find out", "find", "look for", "work out"], answer: "find out" },
+          { type: "listen", prompt: "Tippe, was du hörst", answer: "I ran out of milk", hint: "„Die Milch ist alle“" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "u3",
+    title: "Einheit 3 · Redewendungen",
+    description: "Idioms — die geheime Sprache des Englischen",
+    color: "#ce82ff",
+    tip: "Idioms wirken oft wörtlich übersetzt komisch. „Break the ice“ = das Eis brechen, nicht wortwörtlich.",
+    lessons: [
+      {
+        id: "u3l1",
+        title: "Idioms 1",
+        exercises: [
+          { type: "choice", dir: "de-en", prompt: "das Eis brechen", options: ["break the ice", "break the snow", "melt the ice", "cut the ice"], answer: "break the ice" },
+          { type: "choice", dir: "de-en", prompt: "sehr selten („einmal bei blauem Mond“)", options: ["once in a blue moon", "once upon a time", "every now and then", "from time to time"], answer: "once in a blue moon" },
+          { type: "choice", dir: "de-en", prompt: "ins Bett gehen („den Sack treffen“)", options: ["hit the sack", "hit the hay", "make the bed", "sleep tight"], answer: "hit the sack" },
+          { type: "choice", dir: "en-de", prompt: "under the weather", options: ["sich nicht wohlfühlen / krank sein", "unter der Dusche", "bei schlechtem Wetter", "unter der Decke"], answer: "sich nicht wohlfühlen / krank sein" },
+          { type: "words", dir: "de-en", prompt: "Das kostet ein Vermögen (wörtlich: einen Arm und ein Bein)", bank: ["an", "costs", "It", "leg", "arm", "and", "a"], answer: "It costs an arm and a leg" },
+          { type: "listen", prompt: "Tippe, was du hörst", answer: "It's a piece of cake", hint: "„Das ist kinderleicht“" }
+        ]
+      },
+      {
+        id: "u3l2",
+        title: "Idioms 2",
+        exercises: [
+          { type: "choice", dir: "de-en", prompt: "ein Geheimnis ausplaudern („die Katze aus dem Sack lassen“)", options: ["let the cat out of the bag", "buy a pig in a poke", "kill two birds", "put the cat among the pigeons"], answer: "let the cat out of the bag" },
+          { type: "choice", dir: "de-en", prompt: "in den sauren Apfel beißen", options: ["bite the bullet", "bite the apple", "chew the bullet", "eat the apple"], answer: "bite the bullet" },
+          { type: "choice", dir: "en-de", prompt: "kill two birds with one stone", options: ["zwei Fliegen mit einer Klappe schlagen", "zwei Vögel mit einem Stein töten (wörtlich)", "einen Vogel fangen", "zwei Steine werfen"], answer: "zwei Fliegen mit einer Klappe schlagen" },
+          { type: "fill", sentence: "She ___ the cat out of the bag.", gloss: "„verriet das Geheimnis“ (let ___)", options: ["let", "lets", "letting", "letted"], answer: "let" },
+          { type: "words", dir: "de-en", prompt: "Das war kinderleicht!", bank: ["piece", "of", "cake", "a", "It", "was"], answer: "It was a piece of cake" },
+          { type: "match", prompt: "Paare zuordnen", pairs: [["break the ice", "das Eis brechen"], ["hit the sack", "ins Bett gehen"], ["bite the bullet", "in den sauren Apfel beißen"], ["under the weather", "sich krank fühlen"]] },
+          { type: "listen", prompt: "Tippe, was du hörst", answer: "once in a blue moon", hint: "„ganz selten“" }
+        ]
+      },
+      {
+        id: "u3l3",
+        title: "Idioms im Kontext",
+        exercises: [
+          { type: "choice", dir: "de-en", prompt: "eine unüberlegte Kaufentscheidung („ein Schwein im Sack kaufen“)", options: ["buying a pig in a poke", "buying a cat in a bag", "selling a pig", "feeding a poke"], answer: "buying a pig in a poke" },
+          { type: "choice", dir: "en-de", prompt: "spill the beans", options: ["alles ausplaudern / ein Geheimnis verraten", "Bohnen verschütten", "bohnen essen", "die Bohnen zählen"], answer: "alles ausplaudern / ein Geheimnis verraten" },
+          { type: "choice", dir: "de-en", prompt: "sich wohlfühlen („wie ein Fisch im Wasser“ — umgangssprachlich: at home)", options: ["feel at home", "feel like a fish", "be at water", "feel homely"], answer: "feel at home" },
+          { type: "words", dir: "de-en", prompt: "Er hat das Geheimnis ausgeplaudert", bank: ["He", "spilled", "the", "beans", "let", "cat"], answer: "He spilled the beans" },
+          { type: "fill", sentence: "It's raining cats and ___.", gloss: "„Es regnet wie aus Eimern“ (cats and ___)", options: ["dogs", "mice", "birds", "fish"], answer: "dogs" },
+          { type: "listen", prompt: "Tippe, was du hörst", answer: "break a leg", hint: "„ Hals- und Beinbruch!“ (wörtlich: ein Bein brechen)" }
+        ]
+      }
+    ]
+  },
+  {
+    id: "u4",
+    title: "Einheit 4 · Grammatik B1+",
+    description: "Conditionals, Passiv, Indirekte Rede — die schweren Kaliber",
+    color: "#ff9600",
+    tip: "Third Conditional: If + past perfect, would have + past participle — für irreale vergangene Situationen.",
+    lessons: [
+      {
+        id: "u4l1",
+        title: "Conditionals",
+        exercises: [
+          { type: "choice", dir: "de-en", prompt: "Wenn ich das gewusst hätte, hätte ich angerufen (3. Conditional)", options: ["If I had known, I would have called", "If I knew, I would call", "If I would know, I had called", "If I had known, I would call"], answer: "If I had known, I would have called" },
+          { type: "choice", dir: "de-en", prompt: "Ich wünschte, ich hätte mehr gelernt", options: ["I wish I had studied more", "I wish I would study more", "I wish I have studied more", "I wished I studied more"], answer: "I wish I had studied more" },
+          { type: "choice", dir: "en-de", prompt: "If I were you, I would accept", options: ["Wenn ich du wäre, würde ich annehmen", "Wenn ich du war, nehme ich an", "Als ich du war, akzeptiere ich", "Wenn ich dich sehe, nehme ich an"], answer: "Wenn ich du wäre, würde ich annehmen" },
+          { type: "fill", sentence: "If she ___ (study) harder, she would pass.", gloss: "2. Conditional: Wenn sie härter lernte…", options: ["studied", "had studied", "would study", "studies"], answer: "studied" },
+          { type: "words", dir: "de-en", prompt: "Hätte ich Geld, würde ich reisen", bank: ["Had", "money", "I", "would", "travel", "I", "have"], answer: "Had I money I would travel" },
+          { type: "listen", prompt: "Tippe, was du hörst", answer: "If I had known, I would have told you", hint: "„Hätte ich es gewusst, hätte ich es dir gesagt“" }
+        ]
+      },
+      {
+        id: "u4l2",
+        title: "Passiv & Cleft Sentences",
+        exercises: [
+          { type: "choice", dir: "de-en", prompt: "Der Bericht wurde von Anna geschrieben (Passiv)", options: ["The report was written by Anna", "The report written by Anna was", "Anna was written the report", "The report was wrote by Anna"], answer: "The report was written by Anna" },
+          { type: "choice", dir: "de-en", prompt: "Was ich brauche, ist mehr Zeit (Cleft Sentence)", options: ["What I need is more time", "That I need is more time", "Which I need is more time", "What I need it is more time"], answer: "What I need is more time" },
+          { type: "choice", dir: "en-de", prompt: "It was in London that we met", options: ["In London haben wir uns getroffen (Betonung)", "Wir trafen uns in London", "Es war London wo wir uns trafen", "London war es, als wir uns trafen"], answer: "In London haben wir uns getroffen (Betonung)" },
+          { type: "fill", sentence: "The house ___ (build) in 1920.", gloss: "Passiv Vergangenheit: Das Haus wurde 1920 gebaut", options: ["was built", "is built", "were built", "built"], answer: "was built" },
+          { type: "words", dir: "de-en", prompt: "Was mich wirklich ärgert, ist die Unpünktlichkeit", bank: ["is", "annoys", "me", "What", "really", "punctuality", "the", "lack", "of"], answer: "What really annoys me is the lack of punctuality" },
+          { type: "listen", prompt: "Tippe, was du hörst", answer: "What I need is a holiday", hint: "„Was ich brauche, ist ein Urlaub“" }
+        ]
+      },
+      {
+        id: "u4l3",
+        title: "Indirekte Rede & Nuancen",
+        exercises: [
+          { type: "choice", dir: "de-en", prompt: "Er sagte, er sei krank (Indirekte Rede)", options: ["He said he was ill", "He said he is ill", "He said he were ill", "He said he has been ill"], answer: "He said he was ill" },
+          { type: "choice", dir: "de-en", prompt: "aktuell ( NICHT „actual“!)", options: ["current", "actual", "present", "real"], answer: "current" },
+          { type: "choice", dir: "de-en", prompt: "eventuell ( NICHT „eventual“!)", options: ["possibly / maybe", "eventual", "finally", "actually"], answer: "possibly / maybe" },
+          { type: "choice", dir: "en-de", prompt: "handy (deutsches Fremdwort im Englischen)", options: ["Mobiltelefon", "praktisch", "handlich", "Handy wie Werkzeug"], answer: "Mobiltelefon" },
+          { type: "fill", sentence: "She said she ___ (be) tired.", gloss: "Indirekte Rede: Sie sagte, sie sei müde", options: ["was", "is", "were", "had been"], answer: "was" },
+          { type: "words", dir: "de-en", prompt: "Ich habe meinen Führerschein gemacht (korrekt: got, nicht made!)", bank: ["got", "I", "my", "driver's", "license", "made"], answer: "I got my driver's license" },
+          { type: "match", prompt: "Paare zuordnen", pairs: [["aktuell", "current"], ["eventuell", "possibly"], ["bekommen", "get / receive"], ["handy", "mobile phone"]] },
+          { type: "listen", prompt: "Tippe, was du hörst", answer: "He said he was tired", hint: "„Er sagte, er sei müde“" }
+        ]
+      }
+    ]
+  }
+];
+
+function findLesson(id) {
+  for (const u of UNITS) for (const l of u.lessons) if (l.id === id) return { unit: u, lesson: l };
+  return null;
+}
+
+</script>
+<script>
+/* EnglishProfi — generated advanced (B1+) topic units.
+   Format: words [[english, german], ...], sentences [[english, german], ...].
+   Deterministic: same seed -> same lessons. */
+
+const TOPICS = [
+  { name: "Business English", tip: "Geschäftsenglisch ist höflich und präzise: „Could you…?“ statt „You must…“.",
+    words: [["deadline","Frist"],["meeting","Besprechung"],["agenda","Tagesordnung"],["to circulate","in Umlauf bringen"],["stakeholder","Projektbeteiligter"],["to liaise","vermitteln / koordinieren"],["action item","Aufgabenpunkt"],["ballpark figure","ungefähre Größenordnung"],["to follow up","nachfassen"],["bottom line","Endergebnis / Kernpunkt"]],
+    sentences: [["Let's schedule a meeting.","Lass uns eine Besprechung planen."],["I'll circulate the agenda tomorrow.","Ich bringe die Tagesordnung morgen in Umlauf."],["What's the bottom line?","Was ist das Endergebnis?"]] },
+  { name: "E-Mail etiquette", tip: "„Dear Sir or Madam“ = sehr förmlich; „Hi team“ = locker; „Kind regards“ = freundlicher Gruß.",
+    words: [["attachment","Anhang"],["to get back to someone","sich bei jemandem melden"],["further to your email","bezugnehmend auf Ihre E-Mail"],["as discussed","wie besprochen"],["please find attached","siehe Anhang"],["looking forward to","ich freue mich auf"],["cc / bcc","Kopie / Blindkopie"]],
+    sentences: [["Please find attached the report.","Im Anhang finden Sie den Bericht."],["I'll get back to you by Friday.","Ich melde mich bis Freitag bei Ihnen."],["As discussed, we'll start in May.","Wie besprochen starten wir im Mai."]] },
+  { name: "Academic English", tip: "Akademisches Englisch vermeidet „very“ — nutze „extremely“, „highly“, „particularly“.",
+    words: [["to argue","argumentieren / behaupten"],["evidence","Belege / Nachweis"],["peer-reviewed","von Experten geprüft"],["hypothesis","Hypothese"],["to conduct a study","eine Studie durchführen"],["significant","signifikant / bedeutsam"],["to emphasise","betonen"],["drawback","Nachteil"],["nevertheless","nichtsdestotrotz"],["thus","daher / folglich"]],
+    sentences: [["The evidence suggests that…","Die Belege legen nahe, dass…"],["This study was peer-reviewed.","Diese Studie wurde von Experten geprüft."],["Nevertheless, the results are clear.","Nichtsdestotrotz sind die Ergebnisse klar."]] },
+  { name: "Travel & airports", tip: "„Check in“ = einchecken; „boarding pass“ = Bordkarte; „excess luggage“ = Übergepäck.",
+    words: [["boarding pass","Bordkarte"],["check-in","Check-in / Einchecken"],["baggage claim","Gepäckausgabe"],["customs","Zoll"],["connecting flight","Anschlussflug"],["delay","Verspätung"],["jet lag","Jetlag"],["aisle seat","Gangplatz"],["window seat","Fensterplatz"],["carry-on","Handgepäck"]],
+    sentences: [["Our flight has been delayed.","Unser Flug hat Verspätung."],["Where is the baggage claim?","Wo ist die Gepäckausgabe?"],["I'd like an aisle seat, please.","Ich hätte gerne einen Gangplatz."]] },
+  { name: "Health & wellbeing", tip: "„I'm under the weather“ = umgangssprachlich für „ich fühle mich krank“.",
+    words: [["workout","Training"],["to be worn out","erschöpft sein"],["mental health","psychische Gesundheit"],["to burn out","ausbrennen"],["resilience","Widerstandsfähigkeit"],["mindfulness","Achtsamkeit"],["to recover","sich erholen"],["vaccination","Impfung"],["side effects","Nebenwirkungen"],["prescription","Rezept (medizinisch)"]],
+    sentences: [["I've been feeling worn out lately.","Ich fühle mich in letzter Zeit erschöpft."],["Exercise improves mental health.","Sport verbessert die psychische Gesundheit."],["Take time to recover.","Nimm dir Zeit, dich zu erholen."]] },
+  { name: "Environment & climate", tip: "„Carbon footprint“ = CO₂-Fußabdruck; „renewable energy“ = erneuerbare Energien.",
+    words: [["carbon footprint","CO₂-Fußabdruck"],["renewable energy","erneuerbare Energie"],["sustainable","nachhaltig"],["to emit","ausstoßen"],["greenhouse gases","Treibhausgase"],["biodiversity","Artenvielfalt"],["to phase out","auslaufen lassen"],["deforestation","Abholzung"],["circular economy","Kreislaufwirtschaft"],["net zero","Netto-Null"]],
+    sentences: [["We must reduce our carbon footprint.","Wir müssen unseren CO₂-Fußabdruck verringern."],["Solar power is a renewable energy.","Solarenergie ist erneuerbar."],["The species is threatened by deforestation.","Die Art ist durch Abholzung bedroht."]] },
+  { name: "Technology & AI", tip: "„Machine learning“ = maschinelles Lernen; „algorithm“ = Algorithmus.",
+    words: [["artificial intelligence","künstliche Intelligenz"],["machine learning","maschinelles Lernen"],["algorithm","Algorithmus"],["to leak data","Daten leaken"],["cybersecurity","Cybersicherheit"],["cloud computing","Cloud-Computing"],["to update","aktualisieren"],["to crash","abstürzen"],["user-friendly","benutzerfreundlich"],["to hack","hacken"]],
+    sentences: [["AI is changing the way we work.","KI verändert unsere Arbeitsweise."],["Please update your app.","Bitte aktualisiere deine App."],["The system crashed last night.","Das System ist letzte Nacht abgestürzt."]] },
+  { name: "Media & news", tip: "„Headline“ = Schlagzeile; „to broadcast“ = senden / übertragen.",
+    words: [["headline","Schlagzeile"],["to broadcast","senden / übertragen"],["bias","Voreingenommenheit"],["source","Quelle"],["to verify","überprüfen / verifizieren"],["misinformation","Desinformation"],["press freedom","Pressefreiheit"],["to cover a story","über ein Thema berichten"],["viral","viral / massenhaft verbreitet"],["subscription","Abonnement"]],
+    sentences: [["Don't believe every headline.","Glaub nicht jeder Schlagzeile."],["Always verify your sources.","Überprüfe immer deine Quellen."],["The video went viral.","Das Video ging viral."]] },
+  { name: "Education", tip: "„Tuition fees“ = Studiengebühren; „scholarship“ = Stipendium.",
+    words: [["tuition fees","Studiengebühren"],["scholarship","Stipendium"],["lecture","Vorlesung"],["seminar","Seminar"],["thesis","Abschlussarbeit"],["to enrol","sich einschreiben"],["curriculum","Lehrplan"],["deadline","Abgabefrist"],["to graduate","den Abschluss machen"],["lifelong learning","lebenslanges Lernen"]],
+    sentences: [["She won a scholarship to study abroad.","Sie bekam ein Stipendium fürs Auslandsstudium."],["The lecture starts at nine.","Die Vorlesung beginnt um neun."],["I graduate next summer.","Ich mache nächsten Sommer meinen Abschluss."]] },
+  { name: "Social issues", tip: "„Equality“ = Gleichheit; „to discriminate against“ = benachteiligen.",
+    words: [["equality","Gleichberechtigung"],["discrimination","Diskriminierung"],["to marginalise","an den Rand drängen"],["poverty","Armut"],["homelessness","Obdachlosigkeit"],["integration","Integration"],["diversity","Vielfalt"],["to advocate for","sich einsetzen für"],["inequality","Ungleichheit"],["welfare state","Sozialstaat"]],
+    sentences: [["Diversity makes our society stronger.","Vielfalt macht unsere Gesellschaft stärker."],["We must fight inequality.","Wir müssen Ungleichheit bekämpfen."],["Everyone deserves equal opportunities.","Jeder verdient gleiche Chancen."]] },
+  { name: "Science", tip: "„Peer review“ = kollegiale Begutachtung vor Veröffentlichung.",
+    words: [["experiment","Experiment"],["peer review","kollegiale Begutachtung"],["to observe","beobachten"],["data","Daten"],["to analyse","analysieren"],["conclusion","Schlussfolgerung"],["reliable","zuverlässig"],["to replicate","replizieren / wiederholen"],["breakthrough","Durchbruch"],["hypothesis","Hypothese"]],
+    sentences: [["The experiment was a success.","Das Experiment war ein Erfolg."],["We analysed the data carefully.","Wir haben die Daten sorgfältig analysiert."],["This is a major breakthrough.","Das ist ein bedeutender Durchbruch."]] },
+  { name: "Food & dining out", tip: "„Bill“ = Rechnung (USA), „check“ = Rechnung (UK/USA); „starter“ = Vorspeise.",
+    words: [["starter","Vorspeise"],["main course","Hauptgericht"],["dessert","Nachtisch"],["the bill / the check","die Rechnung"],["to tip","Trinkgeld geben"],["rare / medium / well done","blutig / medium / durch"],["tasting menu","Degustationsmenü"],["vegan","vegan"],["to book a table","einen Tisch reservieren"],["leftovers","Reste"]],
+    sentences: [["Could we have the bill, please?","Könnten wir bitte die Rechnung haben?"],["I'd like my steak medium, please.","Ich hätte das Steak gerne medium."],["Can we book a table for four?","Können wir einen Tisch für vier reservieren?"]] },
+  { name: "Money & finance", tip: "„Stock market“ = Börse; „interest rate“ = Zinssatz; „budget“ = Haushalt / Budget.",
+    words: [["stock market","Börse"],["interest rate","Zinssatz"],["inflation","Inflation"],["budget","Budget"],["savings","Ersparnisse"],["loan","Kredit / Darlehen"],["to invest","investieren"],["shares","Aktien"],["tax","Steuer"],["currency","Währung"]],
+    sentences: [["Interest rates are rising.","Die Zinssätze steigen."],["I need to make a budget.","Ich muss ein Budget erstellen."],["She invests in shares.","Sie investiert in Aktien."]] },
+  { name: "Law & politics", tip: "„Bill“ = Gesetzesentwurf (USA); „to pass a law“ = ein Gesetz verabschieden.",
+    words: [["law","Gesetz"],["to pass a law","ein Gesetz verabschieden"],["court","Gericht"],["trial","Gerichtsverfahren"],["witness","Zeuge"],["evidence","Beweismittel"],["verdict","Urteil"],["to sue","verklagen"],["human rights","Menschenrechte"],["election","Wahl"]],
+    sentences: [["The court delivered its verdict.","Das Gericht verkündete sein Urteil."],["They won the trial.","Sie gewannen den Prozess."],["Everyone has basic human rights.","Jeder hat grundlegende Menschenrechte."]] },
+  { name: "Psychology", tip: "„Cognitive bias“ = kognitiver Fehler / Wahrnehmungsverzerrung.",
+    words: [["cognitive bias","kognitive Verzerrung"],["conscious","bewusst"],["unconscious","unbewusst"],["to cope with","mit etwas umgehen / fertigwerden"],["resilience","Resilienz"],["self-esteem","Selbstwertgefühl"],["anxiety","Angst / Besorgnis"],["to perceive","wahrnehmen"],["behaviour","Verhalten"],["trigger","Auslöser"]],
+    sentences: [["Anxiety can be triggered by stress.","Angst kann durch Stress ausgelöst werden."],["Building resilience takes time.","Resilienz aufzubauen braucht Zeit."],["How do you cope with pressure?","Wie gehst du mit Druck um?"]] },
+  { name: "Marketing", tip: "„Target audience“ = Zielgruppe; „brand awareness“ = Markenbekanntheit.",
+    words: [["target audience","Zielgruppe"],["brand awareness","Markenbekanntheit"],["campaign","Kampagne"],["slogan","Werbespruch"],["to launch a product","ein Produkt auf den Markt bringen"],["USP (unique selling point)"," Alleinstellungsmerkmal"],["market research","Marktforschung"],["to persuade","überzeugen"],["catchy","einprägsam"],["word of mouth","Mundpropaganda"]],
+    sentences: [["Our target audience is young professionals.","Unsere Zielgruppe sind junge Berufstätige."],["The slogan was very catchy.","Der Werbespruch war sehr einprägsam."],["We launched the product last week.","Wir brachten das Produkt letzte Woche auf den Markt."]] },
+  { name: "Remote work", tip: "„Work-life balance“ = Work-Life-Balance; „to commute“ = pendeln.",
+    words: [["remote work","Remote-Arbeit / Homeoffice"],["to commute","pendeln"],["work-life balance","Work-Life-Balance"],["video call","Videokonferenz"],["to mute","stumm schalten"],["time zone","Zeitzone"],["hybrid work","hybride Arbeit"],["to log off","sich abmelden"],["availability","Erreichbarkeit"],["to delegate","delegieren"]],
+    sentences: [["Remote work improves work-life balance.","Remote-Arbeit verbessert die Work-Life-Balance."],["Let's schedule a video call.","Lass uns eine Videokonferenz planen."],["Please mute yourself during the call.","Bitte schalte dich während des Anrufs stumm."]] },
+  { name: "Presentations", tip: "„To sum up“ = zusammenfassend; „in conclusion“ = abschließend.",
+    words: [["slide","Folie"],["to sum up","zusammenfassend"],["in conclusion","abschließend"],["audience","Publikum / Zuhörer"],["to emphasise a point","einen Punkt betonen"],["Q&A (questions & answers)","Frage-und-Antwort-Runde"],["to engage the audience","das Publikum einbinden"],["key takeaway","Kernbotschaft"],["handout","Handout / Handzettel"],["to rehearse","proben"]],
+    sentences: [["Let me sum up the main points.","Lass mich die Hauptpunkte zusammenfassen."],["Any questions before we conclude?","Noch Fragen, bevor wir abschließen?"],["She rehearsed her talk twice.","Sie probte ihren Vortrag zweimal."]] },
+  { name: "Negotiation", tip: "„Win-win situation“ = Situation mit Vorteilen für beide Seiten.",
+    words: [["negotiation","Verhandlung"],["win-win situation","Win-win-Situation"],["compromise","Kompromiss"],["terms and conditions","Allgemeine Geschäftsbedingungen"],["to haggle","feilschen"],["counter-offer","Gegenangebot"],["deadline","Frist"],["agreement","Vereinbarung"],["to concede","einräumen / nachgeben"],["leverage","Verhandlungsmacht"]],
+    sentences: [["We reached a win-win agreement.","Wir erzielten eine Win-win-Vereinbarung."],["I can't accept these terms.","Diese Bedingungen kann ich nicht akzeptieren."],["Let me make a counter-offer.","Lass mich ein Gegenangebot machen."]] },
+  { name: "Small talk", tip: "Small Talk dreht sich um harmlose Themen: Wetter, Wochenende, Hobbys — nie um Geld, Politik, Religion.",
+    words: [["small talk","Smalltalk / oberflächliches Gespräch"],["how's it going?","wie läuft's?"],["have a good one","mach's gut / schönen Tag noch"],["no worries","schon gut / kein Problem"],["fair enough","in Ordnung / einverstanden"],["you're kidding","du machst Witze"],["I hear you","ich verstehe dich"],["speaking of which","apropos"],["by the way","übrigens"],["long time no see","lange nicht gesehen"]],
+    sentences: [["Long time no see! How's it going?","Lange nicht gesehen! Wie läuft's?"],["Have a good one! See you around.","Mach's gut! Bis dann."],["By the way, did you see the game?","Übrigens, hast du das Spiel gesehen?"]] },
+  { name: "Collocations", tip: "Collocations sind feste Wortpaare: „make a decision“ (nicht „do a decision“), „heavy rain“ (nicht „strong rain“).",
+    words: [["make a decision","eine Entscheidung treffen"],["heavy rain","starker Regen"],["strong coffee","starker Kaffee"],["do homework","Hausaufgaben machen"],["take a photo","ein Foto machen"],["pay attention","aufpassen"],["break the rules","Regeln brechen"],["raise awareness","Bewusstsein schärfen"],["achieve a goal","ein Ziel erreichen"],["make progress","Fortschritte machen"]],
+    sentences: [["We need to make a decision by Friday.","Wir müssen bis Freitag eine Entscheidung treffen."],["There was heavy rain all night.","Es gab die ganze Nacht starken Regen."],["Pay attention to the details!","Achte auf die Details!"]] },
+  { name: "Word formation", tip: "Präfixe & Suffixe: „un-“, „re-“, „-less“, „-ful“, „-ness“. „Happiness“ = Glück (happy + ness).",
+    words: [["unhappy","unglücklich"],["rewrite","neu schreiben"],["hopeless","hoffnungslos"],["careful","sorgfältig / vorsichtig"],["happiness","Glück"],["childhood","Kindheit"],["to strengthen","stärken"],["to lengthen","verlängern"],["worthless","wertlos"],["to broaden","erweitern"]],
+    sentences: [["Happiness is more important than money.","Glück ist wichtiger als Geld."],["We need to strengthen our team.","Wir müssen unser Team stärken."],["The film broadened my perspective.","Der Film erweiterte meinen Horizont."]] },
+  { name: "Discourse markers", tip: "Verbindungswörter strukturieren Texte: „however“ (jedoch), „therefore“ (daher), „on the other hand“ (andererseits).",
+    words: [["however","jedoch / allerdings"],["therefore","daher / deshalb"],["on the other hand","andererseits"],["in addition","außerdem / zusätzlich"],["as a result","als Folge / infolgedessen"],["moreover","überdies / außerdem"],["in contrast","im Gegensatz dazu"],["consequently","folglich"],["to illustrate","um es zu veranschaulichen"],["in short","kurz gesagt"]],
+    sentences: [["It rained; however, we still went out.","Es regnete; jedoch gingen wir trotzdem raus."],["He studied hard; as a result, he passed.","Er lernte hart; infolgedessen bestand er."],["In short, the project was successful.","Kurz gesagt, das Projekt war erfolgreich."]] },
+  { name: "Register & nuance", tip: "„Actually“ = „eigentlich/tatsächlich“ (nicht „aktuell“!). „Currently“ = „derzeit“.",
+    words: [["actually","eigentlich / tatsächlich"],["currently","derzeit / gegenwärtig"],["eventually","schließlich / letztendlich"],["at the moment","im Moment"],["meanwhile","inzwischen / währenddessen"],["in fact","tatsächlich / genau genommen"],["obviously","offensichtlich"],["apparently","anscheinend"],["presumably","vermutlich"],["undoubtedly","zweifellos"]],
+    sentences: [["Actually, I don't like coffee.","Eigentlich mag ich keinen Kaffee."],["I'm currently reading a great book.","Ich lese derzeit ein tolles Buch."],["He eventually arrived at midnight.","Er kam schließlich um Mitternacht an."]] },
+  { name: "Travel verbs", tip: "„To set off“ = aufbrechen; „to stop over“ = zwischenlanden / übernachten.",
+    words: [["to set off","aufbrechen / losfahren"],["to stop over","zwischenlanden"],["to get away","wegkommen / verreisen"],["to check out","auschecken"],["to look around","sich umsehen"],["to see off","verabschieden (am Bahnhof)"],["to pick up","abholen"],["to drop off","absetzen / vorbeibringen"],["sightseeing","Sehenswürdigkeiten besichtigen"],["off the beaten track","abseits der ausgetretenen Pfade"]],
+    sentences: [["We set off at dawn.","Wir brachen bei Morgengrauen auf."],["Let's go sightseeing tomorrow.","Lass uns morgen Sehenswürdigkeiten besichtigen."],["I'll pick you up at seven.","Ich hole dich um sieben ab."]] }
+];
+
+function mulberry32(seed) {
+  return function () {
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function sample(rng, arr, n) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a.slice(0, n);
+}
+
+function pickDistractors(rng, pool, answer, n) {
+  const out = [];
+  const candidates = pool.filter(x => x !== answer);
+  for (const c of sample(rng, candidates, candidates.length)) {
+    if (out.length >= n) break;
+    out.push(c);
+  }
+  return out;
+}
+
+function genTopicUnit(topic, ti) {
+  const rng = mulberry32(5000 + ti * 131);
+  const enPool = topic.words.map(w => w[0]);
+  const dePool = topic.words.map(w => w[1]);
+  const lessons = [];
+
+  function vocabLesson(idx, title, words) {
+    const ex = [];
+    words.forEach((w, i) => {
+      const deToEn = (i + ti) % 2 === 0;
+      const pool = deToEn ? dePool : enPool;
+      const answer = deToEn ? w[0] : w[1];
+      const prompt = deToEn ? w[1] : w[0];
+      ex.push({
+        type: "choice", dir: deToEn ? "de-en" : "en-de", prompt,
+        options: sample(rng, [answer, ...pickDistractors(rng, pool, answer, 3)], 4),
+        answer
+      });
+    });
+    const pairs = sample(rng, topic.words, 4).map(w => [w[1], w[0]]);
+    ex.push({ type: "match", prompt: "Paare zuordnen", pairs });
+    const s = topic.sentences[idx % topic.sentences.length];
+    ex.push({
+      type: "words", dir: "de-en", prompt: s[1],
+      bank: sample(rng, [...s[0].replace(/[.!?,:;']/g, "").split(" "), ...pickDistractors(rng, enPool, s[0], 2)], 99),
+      answer: s[0].replace(/[.!?,:;']/g, "")
+    });
+    return { id: "g" + ti + "l" + idx, title, exercises: ex };
+  }
+
+  function sentenceLesson(idx, title) {
+    const ex = [];
+    topic.sentences.forEach((s, i) => {
+      const deToEn = (i + ti) % 2 === 0;
+      const pool = deToEn ? dePool.concat(topic.sentences.map(x => x[1])) : enPool.concat(topic.sentences.map(x => x[0]));
+      const answer = deToEn ? s[0] : s[1];
+      const prompt = deToEn ? s[1] : s[0];
+      ex.push({
+        type: "choice", dir: deToEn ? "de-en" : "en-de", prompt,
+        options: sample(rng, [answer, ...pickDistractors(rng, pool, answer, 3)], 4),
+        answer
+      });
+    });
+    const s = topic.sentences[idx % topic.sentences.length];
+    ex.push({
+      type: "words", dir: "de-en", prompt: s[1],
+      bank: sample(rng, [...s[0].replace(/[.!?,:;']/g, "").split(" "), ...pickDistractors(rng, enPool, s[0], 2)], 99),
+      answer: s[0].replace(/[.!?,:;']/g, "")
+    });
+    ex.push({ type: "listen", prompt: "Tippe, was du hörst", answer: s[0], hint: s[1] });
+    const w = topic.words[idx % topic.words.length];
+    ex.push({
+      type: "fill", sentence: "___ = " + w[1], gloss: "Englisches Wort für „" + w[1] + "“", options: sample(rng, [w[0], ...pickDistractors(rng, enPool, w[0], 3)], 4), answer: w[0]
+    });
+    return { id: "g" + ti + "l" + idx, title, exercises: ex };
+  }
+
+  const w1 = topic.words.slice(0, 5);
+  const w2 = topic.words.slice(5, 10);
+  lessons.push(vocabLesson(0, topic.name + " — Vokabeln 1", w1));
+  lessons.push(vocabLesson(1, topic.name + " — Vokabeln 2", w2.length ? w2 : topic.words.slice(0, 5)));
+  lessons.push(sentenceLesson(2, topic.name + " — im Satz"));
+  return {
+    id: "gu" + ti, title: "Einheit " + (UNITS.length + ti + 1) + " · " + topic.name,
+    description: topic.name.toLowerCase() + " auf B1+-Niveau", color: ["#4b7bff", "#1cb0f6", "#ce82ff", "#ff9600", "#ff4b4b", "#00cd9c"][ti % 6],
+    tip: topic.tip, lessons
+  };
+}
+
+for (let i = 0; i < TOPICS.length; i++) UNITS.push(genTopicUnit(TOPICS[i], i));
+
+</script>
+<script>
+/* Slovenko — optional Firebase cloud sync.
+   If firebase-config.js is missing, the app simply runs in offline/local mode. */
+
+const FIREBASE_CDN = "https://www.gstatic.com/firebasejs/10.12.2/";
+
+const fb = { app: null, auth: null, db: null, user: null, ready: false };
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+}
+
+async function initFirebase() {
+  if (typeof firebaseConfig === "undefined") return false;
+  try {
+    await loadScript(FIREBASE_CDN + "firebase-app-compat.js");
+    await loadScript(FIREBASE_CDN + "firebase-auth-compat.js");
+    await loadScript(FIREBASE_CDN + "firebase-firestore-compat.js");
+    fb.app = firebase.initializeApp(firebaseConfig);
+    fb.auth = firebase.auth();
+    fb.db = firebase.firestore();
+    fb.ready = true;
+    fb.auth.onAuthStateChanged(onAuthChange);
+    return true;
+  } catch (e) {
+    console.warn("Firebase unavailable — running in offline mode.");
+    return false;
+  }
+}
+
+async function onAuthChange(user) {
+  fb.user = user;
+  if (user) {
+    try {
+      const snap = await fb.db.collection("users").doc(user.uid).get();
+      if (snap.exists) {
+        const d = snap.data();
+        const p = store.profiles.find(x => x.uid === user.uid) || emptyProfile(d.name || "Learner", d.avatar || AVATARS[0]);
+        Object.assign(p, {
+          uid: user.uid, name: d.name || p.name, avatar: d.avatar || p.avatar,
+          xp: d.xp || 0, streak: d.streak || 0, lastDate: d.lastDate || null,
+          completed: d.completed || {}
+        });
+        if (!store.profiles.includes(p)) store.profiles.push(p);
+        if (state && state.uid !== user.uid && (state.xp > (d.xp || 0) || Object.keys(state.completed).length > Object.keys(d.completed || {}).length)) {
+          // Local profile has more progress than the cloud copy: upload it.
+          p.xp = Math.max(p.xp, state.xp);
+          p.completed = Object.assign({}, d.completed, state.completed);
+          p.streak = Math.max(p.streak, state.streak);
+          await syncCloud(p);
+        }
+        activateProfile(p.id);
+        renderHome();
+        showScreen("screen-home");
+      } else if (state) {
+        // No cloud doc yet: claim the current local profile for this account.
+        state.uid = user.uid;
+        saveStore();
+        await syncCloud(state);
+      }
+    } catch (e) {
+      console.warn("Cloud sync failed:", e.message);
+    }
+  }
+  renderCloudBox();
+}
+
+async function syncCloud(profile) {
+  if (!fb.ready || !fb.user || !profile) return;
+  try {
+    await fb.db.collection("users").doc(fb.user.uid).set({
+      name: profile.name, avatar: profile.avatar,
+      xp: profile.xp, streak: profile.streak, lastDate: profile.lastDate,
+      completed: profile.completed, updatedAt: Date.now()
+    }, { merge: true });
+  } catch (e) {
+    console.warn("Cloud sync failed:", e.message);
+  }
+}
+
+function renderCloudBox() {
+  const box = document.getElementById("cloud-box");
+  if (!box) return;
+  const btn = document.getElementById("btn-cloud");
+  const form = document.getElementById("cloud-form");
+  const userBox = document.getElementById("cloud-user");
+  const configured = typeof firebaseConfig !== "undefined";
+  if (!configured) {
+    box.innerHTML = `<p class="cloud-note">☁️ Cloud-Sync ist aus — füge <code>firebase-config.js</code> hinzu, um Konten geräteübergreifend zu nutzen.</p>`;
+    return;
+  }
+  if (fb.user) {
+    btn.classList.add("hidden");
+    form.classList.add("hidden");
+    userBox.classList.remove("hidden");
+    document.getElementById("cloud-email-label").textContent = fb.user.email;
+  } else {
+    btn.classList.remove("hidden");
+    userBox.classList.add("hidden");
+  }
+}
+
+async function cloudSignIn(email, password) {
+  await fb.auth.signInWithEmailAndPassword(email, password);
+}
+
+async function cloudSignUp(email, password) {
+  const cred = await fb.auth.createUserWithEmailAndPassword(email, password);
+  return cred;
+}
+
+async function cloudSignOut() {
+  await fb.auth.signOut();
+  renderProfiles();
+  showScreen("screen-profiles");
+}
+
+window.SlovenkoCloud = {
+  sync() { if (state) syncCloud(state); },
+  get signedIn() { return !!fb.user; }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  initFirebase().then(renderCloudBox);
+  const btn = document.getElementById("btn-cloud");
+  const form = document.getElementById("cloud-form");
+  if (btn) btn.addEventListener("click", () => form.classList.toggle("hidden"));
+  const msg = document.getElementById("cloud-msg");
+  const doAuth = async (fn) => {
+    const email = document.getElementById("cloud-email").value.trim();
+    const pass = document.getElementById("cloud-pass").value;
+    msg.textContent = "";
+    if (!email || pass.length < 6) { msg.textContent = "E-Mail und Passwort eingeben (min. 6 Zeichen)."; return; }
+    try { await fn(email, pass); }
+    catch (e) { msg.textContent = e.message.replace("Firebase: ", ""); }
+  };
+  document.getElementById("btn-signin").addEventListener("click", () => doAuth(cloudSignIn));
+  document.getElementById("btn-signup").addEventListener("click", () => doAuth(cloudSignUp));
+  document.getElementById("btn-signout").addEventListener("click", cloudSignOut);
+});
+
+</script>
+<script>
+/* Slovenko — app logic (multi-profile) */
+
+const STORE_KEY = "englishprofi-profiles-v1";
+const LEGACY_KEY = "englishprofi-legacy-v1";
+const AVATARS = ["🦊", "🐸", "🦊", "🐼", "🦁", "🐯", "🐰", "🐨"];
+
+function emptyProfile(name, avatar) {
+  return { id: "p" + Date.now() + Math.random().toString(36).slice(2, 7),
+           name: name || "Lerner", avatar: avatar || AVATARS[0],
+           xp: 0, streak: 0, lastDate: null, completed: {} };
+}
+
+function loadStore() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORE_KEY) || (memFallback || "null"));
+    if (s && Array.isArray(s.profiles)) return Object.assign({ profiles: [], activeId: null }, s);
+  } catch (e) { /* fresh start */ }
+  // Migrate the old single-player save into a first profile.
+  try {
+    const old = JSON.parse(localStorage.getItem(LEGACY_KEY));
+    if (old && typeof old === "object" && (old.xp || old.completed)) {
+      const p = emptyProfile("Lerner", AVATARS[0]);
+      Object.assign(p, { xp: old.xp || 0, streak: old.streak || 0, lastDate: old.lastDate || null, completed: old.completed || {} });
+      localStorage.removeItem(LEGACY_KEY);
+      return { profiles: [p], activeId: p.id };
+    }
+  } catch (e) { /* ignore */ }
+  return { profiles: [], activeId: null };
+}
+
+let memFallback = null; // used when localStorage is blocked (e.g. private mode)
+function saveStore() {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(store));
+  } catch (e) {
+    memFallback = JSON.stringify(store);
+  }
+}
+
+let store = loadStore();
+let state = store.profiles.find(p => p.id === store.activeId) || null;
+
+function activateProfile(id) {
+  state = store.profiles.find(p => p.id === id) || null;
+  store.activeId = id;
+  saveStore();
+  if (state) updateStreak();
+}
+
+// Streak: +1 if last activity was yesterday, reset if older, keep if today.
+function updateStreak() {
+  if (!state) return;
+  const today = new Date().toDateString();
+  if (state.lastDate === today) return;
+  const y = new Date(Date.now() - 86400000).toDateString();
+  state.streak = state.lastDate === y ? state.streak + 1 : 1;
+  state.lastDate = today;
+  saveStore();
+  if (window.SlovenkoCloud) window.SlovenkoCloud.sync();
+}
+
+/* ---------------- Profile picker screen ---------------- */
+
+function renderProfiles() {
+  const list = document.getElementById("profile-list");
+  list.innerHTML = "";
+  store.profiles.forEach(p => {
+    const card = document.createElement("div");
+    card.className = "profile-card";
+    card.innerHTML = `<div class="profile-avatar">${p.avatar}</div>
+      <div class="profile-info"><b>${escapeHtml(p.name)} ${p.uid ? '<span class="cloud-badge">☁️</span>' : ""}</b><span>⚡ ${p.xp} XP · 🔥 ${p.streak}</span></div>
+      <button class="profile-del" title="Delete profile">✕</button>`;
+    card.querySelector(".profile-del").addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (!confirm(`Profil von ${p.name} und gesamten Fortschritt löschen?`)) return;
+      store.profiles = store.profiles.filter(x => x.id !== p.id);
+      if (store.activeId === p.id) { store.activeId = null; state = null; }
+      saveStore();
+      renderProfiles();
+    });
+    card.addEventListener("click", () => {
+      activateProfile(p.id);
+      renderHome();
+      showScreen("screen-home");
+    });
+    list.appendChild(card);
+  });
+  document.getElementById("btn-add-profile").classList.toggle("hidden", false);
+  document.getElementById("profile-create").classList.add("hidden");
+  const avRow = document.getElementById("avatar-row");
+  avRow.innerHTML = "";
+  AVATARS.forEach((a, i) => {
+    const b = document.createElement("button");
+    b.className = "avatar-opt" + (i === 0 ? " selected" : "");
+    b.textContent = a;
+    b.addEventListener("click", () => {
+      avRow.querySelectorAll(".avatar-opt").forEach(x => x.classList.remove("selected"));
+      b.classList.add("selected");
+    });
+    avRow.appendChild(b);
+  });
+}
+
+function createProfile() {
+  const name = document.getElementById("profile-name").value.trim().slice(0, 16);
+  const sel = document.querySelector("#avatar-row .avatar-opt.selected");
+  const p = emptyProfile(name || "Lerner", sel ? sel.textContent : AVATARS[0]);
+  store.profiles.push(p);
+  saveStore();
+  activateProfile(p.id);
+  document.getElementById("profile-name").value = "";
+  renderHome();
+  showScreen("screen-home");
+}
+
+/* ---------------- Home screen ---------------- */
+
+function isUnlocked(lessonId) {
+  const all = [];
+  for (const u of UNITS) for (const l of u.lessons) all.push(l.id);
+  const i = all.indexOf(lessonId);
+  return i === 0 || !!(state && state.completed[all[i - 1]]);
+}
+
+function renderHome() {
+  if (!state) { renderProfiles(); showScreen("screen-profiles"); return; }
+  document.getElementById("stat-xp").textContent = state.xp;
+  document.getElementById("stat-streak").textContent = state.streak;
+  document.getElementById("profile-chip-avatar").textContent = state.avatar;
+  document.getElementById("profile-chip-name").textContent = state.name;
+  const wrap = document.getElementById("units");
+  wrap.innerHTML = "";
+  const icons = ["👋", "🍽️", "👨‍👩‍👧", "🗺️"];
+  UNITS.forEach((u, ui) => {
+    const sec = document.createElement("div");
+    sec.className = "unit";
+    sec.innerHTML = `
+      <div class="unit-header" style="background:${u.color}">
+        <div class="uicon">${icons[ui] || "📘"}</div>
+        <div><h2>${u.title}</h2><p>${u.description}</p></div>
+      </div>
+      <div class="path"></div>
+      <div class="tip-box"><b>Grammar tip:</b> ${u.tip}</div>`;
+    const path = sec.querySelector(".path");
+    u.lessons.forEach((l, li) => {
+      const done = !!state.completed[l.id];
+      const unlocked = isUnlocked(l.id);
+      const nodeWrap = document.createElement("div");
+      nodeWrap.className = "node-wrap";
+      nodeWrap.style.transform = `translateX(${li % 2 === 0 ? -34 : 34}px)`;
+      const btn = document.createElement("button");
+      btn.className = "lesson-node" + (done ? " done" : "") + (!unlocked ? " locked" : "");
+      btn.style.background = unlocked ? u.color : "";
+      btn.textContent = done ? "★" : unlocked ? "▶" : "🔑";
+      btn.title = l.title;
+      if (unlocked) btn.addEventListener("click", () => startLesson(l.id));
+      else btn.addEventListener("click", () => {
+        pendingTestOut = l.id;
+        document.getElementById("modal-locked").classList.remove("hidden");
+      });
+      const label = document.createElement("div");
+      label.className = "node-label";
+      label.textContent = l.title;
+      nodeWrap.appendChild(btn);
+      nodeWrap.appendChild(label);
+      path.appendChild(nodeWrap);
+    });
+    wrap.appendChild(sec);
+  });
+}
+
+/* ---------------- Lesson engine ---------------- */
+
+let session = null;
+let pendingTestOut = null;
+
+function startLesson(id) {
+  const found = findLesson(id);
+  if (!found || !state) return;
+  session = {
+    lesson: found.lesson, unit: found.unit,
+    index: 0, hearts: 5, earned: 0, correct: 0, answered: 0,
+    selection: null, words: [], typed: "", zugeordnet: new Set(), matchSel: null
+  };
+  document.getElementById("lesson-title").textContent = found.lesson.title;
+  document.getElementById("lesson-tip").textContent = "";
+  showScreen("screen-lesson");
+  renderExercise();
+}
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+function shuffle(a) {
+  const arr = a.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function normalize(s) {
+  return (s || "").toLowerCase().trim().replace(/\s+/g, " ")
+    .replace(/[.!?,;:]+$/g, "")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+function speak(text) {
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-GB";
+    u.rate = 0.85;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch (e) { /* speech not available */ }
+}
+
+function renderExercise() {
+  const ex = session.lesson.exercises[session.index];
+  const total = session.lesson.exercises.length;
+  document.getElementById("progress-fill").style.width = (session.index / total * 100) + "%";
+  document.getElementById("stat-hearts").textContent = "∞";
+  document.getElementById("lesson-tip").textContent = `${session.index + 1} / ${total}`;
+
+  session.selection = null; session.words = []; session.typed = "";
+  session.matched = new Set(); session.matchSel = null;
+
+  const area = document.getElementById("exercise-area");
+  const footer = document.getElementById("lesson-footer");
+  footer.classList.remove("hidden");
+  document.getElementById("feedback").textContent = "";
+  const btn = document.getElementById("btn-check");
+  btn.disabled = true;
+  btn.textContent = session.index === total - 1 ? "FERTIG" : "PRÜFEN";
+
+  area.innerHTML = "";
+  if (ex.type === "choice" || ex.type === "fill") renderChoice(area, ex);
+  else if (ex.type === "words") renderWords(area, ex);
+  else if (ex.type === "listen") renderListen(area, ex);
+  else if (ex.type === "match") renderMatch(area, ex);
+}
+
+function dirTag(ex) {
+  if (ex.dir === "de-en") return '<span class="dir-tag">DE → EN</span>';
+  if (ex.dir === "en-de") return '<span class="dir-tag">EN → DE</span>';
+  return "";
+}
+
+function renderChoice(area, ex) {
+  let html = `<div class="ex-prompt">${dirTag(ex)}${ex.type === "fill" ? "" : escapeHtml(ex.prompt)}</div>`;
+  if (ex.type === "fill") {
+    const parts = ex.sentence.split("___");
+    html = `<div class="fill-sentence">${escapeHtml(parts[0])}<span class="blank" id="fill-blank">&nbsp;</span>${escapeHtml(parts[1])}</div>
+            <div class="ex-hint">${escapeHtml(ex.gloss)}</div>`;
+  }
+  html += `<div class="options">` + shuffle(ex.options).map((o) =>
+    `<button class="opt-btn" data-val="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join("") + `</div>`;
+  area.innerHTML = html;
+  area.querySelectorAll(".opt-btn").forEach(b => b.addEventListener("click", () => {
+    area.querySelectorAll(".opt-btn").forEach(x => x.classList.remove("selected"));
+    b.classList.add("selected");
+    session.selection = b.dataset.val;
+    if (ex.type === "fill") document.getElementById("fill-blank").textContent = b.dataset.val;
+    document.getElementById("btn-check").disabled = false;
+  }));
+}
+
+function renderWords(area, ex) {
+  area.innerHTML = `
+    <div class="ex-prompt">${dirTag(ex)}${escapeHtml(ex.prompt)}</div>
+    <div class="answer-area" id="answer-area"></div>
+    <div class="wordbank" id="wordbank"></div>`;
+  const bank = document.getElementById("wordbank");
+  shuffle(ex.bank).forEach((w, i) => {
+    const c = document.createElement("button");
+    c.className = "word-chip";
+    c.textContent = w;
+    c.dataset.idx = i;
+    c.addEventListener("click", () => {
+      session.words.push({ w, idx: i });
+      c.classList.add("used");
+      drawAnswer();
+      document.getElementById("btn-check").disabled = session.words.length === 0;
+    });
+    bank.appendChild(c);
+  });
+  function drawAnswer() {
+    const aa = document.getElementById("answer-area");
+    aa.innerHTML = "";
+    session.words.forEach((item, pos) => {
+      const c = document.createElement("button");
+      c.className = "word-chip in-answer";
+      c.textContent = item.w;
+      c.addEventListener("click", () => {
+        session.words.splice(pos, 1);
+        bank.querySelector(`[data-idx="${item.idx}"]`).classList.remove("used");
+        drawAnswer();
+        document.getElementById("btn-check").disabled = session.words.length === 0;
+      });
+      aa.appendChild(c);
+    });
+  }
+}
+
+function renderListen(area, ex) {
+  area.innerHTML = `
+    <div class="ex-prompt">${escapeHtml(ex.prompt)}</div>
+    <div class="listen-row">
+      <button class="speaker-btn" id="btn-speak" title="Audio abspielen">🔊</button>
+      <input class="text-input" id="listen-input" type="text" placeholder="Tippe, was du hörst…" autocomplete="off">
+    </div>
+    ${ex.hint ? `<div class="ex-hint">Hint: ${escapeHtml(ex.hint)}</div>` : ""}`;
+  const input = document.getElementById("listen-input");
+  document.getElementById("btn-speak").addEventListener("click", () => speak(ex.answer));
+  input.addEventListener("input", () => {
+    session.typed = input.value;
+    document.getElementById("btn-check").disabled = input.value.trim() === "";
+  });
+  setTimeout(() => speak(ex.answer), 350);
+}
+
+function renderMatch(area, ex) {
+  area.innerHTML = `<div class="ex-prompt">${escapeHtml(ex.prompt)}</div><div class="match-grid" id="match-grid"></div>
+    <div class="ex-hint" id="match-status">0 / ${ex.pairs.length} zugeordnet</div>`;
+  const grid = document.getElementById("match-grid");
+  const left = shuffle(ex.pairs.map((p, i) => ({ label: p[0], id: i })));
+  const right = shuffle(ex.pairs.map((p, i) => ({ label: p[1], id: i })));
+  const cells = shuffle([...left.map(c => ({ ...c, side: "L" })), ...right.map(c => ({ ...c, side: "R" }))]);
+  cells.forEach(c => {
+    const b = document.createElement("button");
+    b.className = "match-btn";
+    b.textContent = c.label;
+    b.dataset.side = c.side;
+    b.dataset.id = c.id;
+    b.addEventListener("click", () => {
+      if (session.matched.has(c.id) || b.classList.contains("selected")) return;
+      if (session.matchSel) {
+        const prev = grid.querySelector(`[data-side="${session.matchSel.side}"][data-id="${session.matchSel.id}"]`);
+        if (prev) prev.classList.remove("selected");
+      }
+      if (session.matchSel && session.matchSel.side !== c.side) {
+        if (session.matchSel.id === c.id) {
+          session.matched.add(c.id);
+          b.classList.add("matched");
+          grid.querySelector(`[data-side="${session.matchSel.side}"][data-id="${c.id}"]`).classList.add("matched");
+          session.matchSel = null;
+          document.getElementById("match-status").textContent = `${session.matched.size} / ${ex.pairs.length} zugeordnet`;
+          if (session.matched.size === ex.pairs.length) document.getElementById("btn-check").disabled = false;
+        } else {
+          session.matchSel = { side: c.side, id: c.id };
+          b.classList.add("selected");
+        }
+      } else {
+        session.matchSel = { side: c.side, id: c.id };
+        b.classList.add("selected");
+      }
+    });
+    grid.appendChild(b);
+  });
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+/* ---------------- Checking ---------------- */
+
+function currentAnswer() {
+  const ex = session.lesson.exercises[session.index];
+  if (ex.type === "choice" || ex.type === "fill") return session.selection;
+  if (ex.type === "words") return session.words.map(x => x.w).join(" ");
+  if (ex.type === "listen") return session.typed;
+  if (ex.type === "match") return session.matched.size === ex.pairs.length ? "__matched__" : "";
+  return "";
+}
+
+function checkAnswer() {
+  const ex = session.lesson.exercises[session.index];
+  const given = currentAnswer();
+  const ok = ex.type === "match" ? given === "__matched__" : normalize(given) === normalize(ex.answer);
+  session.answered++;
+  if (ok) {
+    session.correct++;
+    session.earned += 10;
+    showResult(true, ex);
+  } else {
+    showResult(false, ex);
+  }
+  document.getElementById("progress-fill").style.width = ((session.index + 1) / session.lesson.exercises.length * 100) + "%";
+}
+
+function showResult(ok, ex) {
+  const modal = document.getElementById("modal-result");
+  const body = document.getElementById("modal-body");
+  body.className = "modal-body " + (ok ? "good" : "bad");
+  body.innerHTML = ok
+    ? `<h1>Richtig!</h1><p>+10 XP</p>`
+    : `<h1>Nicht ganz…</h1><p class="correct-answer">Richtige Antwort: <b>${escapeHtml(ex.answer)}</b></p>`;
+  modal.classList.remove("hidden");
+}
+
+function nextExercise() {
+  document.getElementById("modal-result").classList.add("hidden");
+  session.index++;
+  if (session.index >= session.lesson.exercises.length) finishLesson();
+  else renderExercise();
+}
+
+function finishLesson() {
+  const id = session.lesson.id;
+  state.completed[id] = Math.max(state.completed[id] || 0, session.earned);
+  state.xp += session.earned;
+  saveStore();
+  if (window.SlovenkoCloud) window.SlovenkoCloud.sync();
+  showScreen("screen-complete");
+  document.getElementById("complete-xp").textContent = session.earned;
+  const acc = session.answered ? Math.round(session.correct / session.answered * 100) : 100;
+  document.getElementById("complete-acc").textContent = acc + "%";
+  document.getElementById("complete-sub").textContent =
+    `${session.lesson.title} — ${state.name} hat ${session.earned} XP verdient!`;
+  session = null;
+}
+
+/* ---------------- Wiring ---------------- */
+
+document.getElementById("btn-testout").addEventListener("click", () => {
+  document.getElementById("modal-locked").classList.add("hidden");
+  if (pendingTestOut) { const id = pendingTestOut; pendingTestOut = null; startLesson(id); }
+});
+document.getElementById("btn-locked-close").addEventListener("click", () => {
+  document.getElementById("modal-locked").classList.add("hidden");
+  pendingTestOut = null;
+});
+
+document.getElementById("btn-check").addEventListener("click", checkAnswer);
+document.getElementById("btn-modal-next").addEventListener("click", nextExercise);
+document.getElementById("btn-continue").addEventListener("click", () => { renderHome(); showScreen("screen-home"); });
+document.getElementById("btn-quit").addEventListener("click", () => {
+  session = null;
+  renderHome();
+  showScreen("screen-home");
+});
+document.getElementById("btn-switch-profile").addEventListener("click", () => {
+  session = null;
+  renderProfiles();
+  showScreen("screen-profiles");
+});
+document.getElementById("btn-add-profile").addEventListener("click", () => {
+  document.getElementById("profile-create").classList.remove("hidden");
+  document.getElementById("profile-name").focus();
+});
+document.getElementById("btn-create-profile").addEventListener("click", createProfile);
+document.getElementById("profile-name").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") createProfile();
+});
+
+/* ---------------- Boot ---------------- */
+
+if (state) { updateStreak(); renderHome(); showScreen("screen-home"); }
+else { renderProfiles(); showScreen("screen-profiles"); }
+
+</script>
+</body>
+</html>
